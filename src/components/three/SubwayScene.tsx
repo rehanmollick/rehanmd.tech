@@ -1,6 +1,7 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
+import { useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 import TrainInterior from "./TrainInterior";
@@ -8,6 +9,38 @@ import TunnelEnvironment from "./TunnelEnvironment";
 import TunnelLights from "./TunnelLights";
 import PostProcessingEffects from "./PostProcessingEffects";
 import CameraEffects from "./CameraEffects";
+import LEDTicker from "./LEDTicker";
+import PosterFrame from "./PosterFrame";
+import DustParticles from "./DustParticles";
+
+/**
+ * Animated point light that simulates tunnel light spill
+ * through the windows onto the interior. Oscillates along Z.
+ */
+function TunnelLightSpill() {
+  const lightRef = useRef<THREE.PointLight>(null);
+
+  useFrame((state) => {
+    if (!lightRef.current) return;
+    const t = state.clock.elapsedTime;
+    // Oscillate along Z to simulate passing tunnel lights
+    lightRef.current.position.z = Math.sin(t * 1.2) * 6;
+    // Pulse intensity to simulate individual lights passing
+    lightRef.current.intensity =
+      1.5 + 1.5 * Math.max(0, Math.sin(t * 3.5));
+  });
+
+  return (
+    <pointLight
+      ref={lightRef}
+      position={[1.8, 1.5, 0]}
+      color="#FFB366"
+      intensity={1.5}
+      distance={8}
+      decay={2}
+    />
+  );
+}
 
 function Scene() {
   return (
@@ -23,7 +56,7 @@ function Scene() {
       />
 
       {/* Lighting — warm interior glow */}
-      <ambientLight intensity={0.35} color="#ffffff" />
+      <ambientLight intensity={0.3} color="#ffffff" />
       {/* Main overhead lights along the car */}
       <pointLight
         position={[0, 2.7, 0]}
@@ -46,20 +79,24 @@ function Scene() {
         distance={18}
         decay={2}
       />
-      {/* Subtle accent fill from right (window side) to catch tunnel light spill */}
-      <pointLight
-        position={[3, 1.5, -3]}
-        intensity={0.8}
-        color="#FFB366"
-        distance={10}
-        decay={2}
-      />
 
-      {/* Fog — start further so near geometry is clear */}
-      <fog attach="fog" args={["#0d0d0d", 10, 70]} />
+      {/* Animated tunnel light spill through windows */}
+      <TunnelLightSpill />
 
-      {/* Scene elements */}
+      {/* Fog — denser for humid night atmosphere */}
+      <fog attach="fog" args={["#0d0d0d", 6, 45]} />
+
+      {/* Train interior geometry */}
       <TrainInterior />
+
+      {/* In-scene info elements (replace HTML overlay) */}
+      <LEDTicker />
+      <PosterFrame />
+
+      {/* Atmospheric dust particles */}
+      <DustParticles />
+
+      {/* Tunnel outside windows */}
       <TunnelEnvironment />
       <TunnelLights />
 
