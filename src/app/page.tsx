@@ -1,57 +1,18 @@
 import Nav from "@/components/layout/Nav";
 import HeroScene from "@/components/three/HeroScene";
-import { Github, Linkedin, Mail } from "lucide-react";
 
 export default function Home() {
   return (
     <>
       <Nav />
 
-      {/* Hero Section — 3D subway scene + overlay */}
+      {/* Hero Section — immersive 3D subway scene, no HTML overlay */}
       <section id="hero" className="relative min-h-screen">
-        {/* 3D Canvas (fixed, behind everything) */}
         <HeroScene />
 
-        {/* Hero overlay content on top of Canvas */}
-        <div className="hero-overlay px-6 md:px-12 lg:px-24">
-          <div className="glass-card p-8 md:p-10 max-w-lg">
-            <h1 className="font-mono text-3xl font-bold tracking-tight md:text-5xl">
-              Md Rehan Mollick
-            </h1>
-            <p className="mt-3 font-mono text-base md:text-lg text-text-secondary">
-              Building Things My Own Way
-            </p>
-            <div className="mt-6 flex gap-5 items-center">
-              <a
-                href="https://github.com/rehanmollick"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-text-secondary hover:text-accent-light transition-colors"
-                aria-label="GitHub"
-              >
-                <Github size={20} />
-              </a>
-              <a
-                href="https://linkedin.com/in/rehanmollick"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-text-secondary hover:text-accent-light transition-colors"
-                aria-label="LinkedIn"
-              >
-                <Linkedin size={20} />
-              </a>
-              <a
-                href="mailto:rehanmollick07@gmail.com"
-                className="text-text-secondary hover:text-accent-light transition-colors"
-                aria-label="Email"
-              >
-                <Mail size={20} />
-              </a>
-            </div>
-          </div>
-
-          {/* Scroll hint */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 pointer-events-none">
+        {/* Scroll hint only — name/links are now in-scene (LED ticker + poster) */}
+        <div className="hero-overlay pointer-events-none">
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
             <div className="font-mono text-xs text-text-muted tracking-widest uppercase animate-pulse">
               Scroll
             </div>
