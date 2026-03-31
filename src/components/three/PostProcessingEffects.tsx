@@ -38,7 +38,7 @@ export default function PostProcessingEffects({
 }: PostProcessingEffectsProps) {
   // Pre-allocate the chromatic aberration offset vector so we never
   // create a new object on re-render.
-  const chromaticOffset = useMemo(() => new Vector2(0.001, 0.001), []);
+  const chromaticOffset = useMemo(() => new Vector2(0.0015, 0.0015), []);
 
   if (!enabled) return null;
 
@@ -54,9 +54,9 @@ export default function PostProcessingEffects({
         pushing the distant tunnel into a soft bokeh.
       */}
       <DepthOfField
-        focusDistance={0.02}
-        focalLength={0.05}
-        bokehScale={1.5}
+        focusDistance={0.015}
+        focalLength={0.04}
+        bokehScale={2.5}
       />
 
       {/*
@@ -66,11 +66,11 @@ export default function PostProcessingEffects({
         radius controls the blur kernel size of the bloom spread.
       */}
       <Bloom
-        intensity={0.5}
-        luminanceThreshold={0.6}
-        luminanceSmoothing={0.4}
-        mipmapBlur // high-quality multi-scale bloom
-        radius={0.8}
+        intensity={0.8}
+        luminanceThreshold={0.5}
+        luminanceSmoothing={0.3}
+        mipmapBlur
+        radius={0.9}
       />
 
       {/*
@@ -80,8 +80,8 @@ export default function PostProcessingEffects({
       */}
       <ChromaticAberration
         offset={chromaticOffset}
-        radialModulation={false}
-        modulationOffset={0.0}
+        radialModulation
+        modulationOffset={0.5}
       />
 
       {/*
@@ -91,9 +91,9 @@ export default function PostProcessingEffects({
         aesthetic while adding textural grit.
       */}
       <Noise
-        premultiply // apply noise before other blending for a natural look
+        premultiply
         blendFunction={BlendFunction.SOFT_LIGHT}
-        opacity={0.08}
+        opacity={0.14}
       />
 
       {/*
@@ -103,8 +103,8 @@ export default function PostProcessingEffects({
         black the corners get.
       */}
       <Vignette
-        offset={0.3}
-        darkness={0.5}
+        offset={0.25}
+        darkness={0.75}
         blendFunction={BlendFunction.NORMAL}
       />
     </EffectComposer>
