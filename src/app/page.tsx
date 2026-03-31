@@ -1,12 +1,6 @@
-import dynamic from "next/dynamic";
 import Nav from "@/components/layout/Nav";
-import SceneLoader from "@/components/three/SceneLoader";
+import HeroScene from "@/components/three/HeroScene";
 import { Github, Linkedin, Mail } from "lucide-react";
-
-const SubwayScene = dynamic(
-  () => import("@/components/three/SubwayScene"),
-  { ssr: false }
-);
 
 export default function Home() {
   return (
@@ -16,9 +10,7 @@ export default function Home() {
       {/* Hero Section — 3D subway scene + overlay */}
       <section id="hero" className="relative min-h-screen">
         {/* 3D Canvas (fixed, behind everything) */}
-        <SceneLoader>
-          <SubwayScene />
-        </SceneLoader>
+        <HeroScene />
 
         {/* Hero overlay content on top of Canvas */}
         <div className="hero-overlay px-6 md:px-12 lg:px-24">
