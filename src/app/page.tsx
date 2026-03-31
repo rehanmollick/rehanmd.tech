@@ -3,6 +3,7 @@ import HeroScene from "@/components/three/HeroScene";
 import AboutSection from "@/components/sections/AboutSection";
 import BlogWallSection from "@/components/blog/BlogWallSection";
 import MetroMap from "@/components/projects/MetroMap";
+import Footer from "@/components/layout/Footer";
 import { getAllPosts } from "@/lib/mdx";
 
 export default function Home() {
@@ -43,42 +44,8 @@ export default function Home() {
         {/* Projects Section — metro line map */}
         <MetroMap />
 
-        {/* Contact Footer — fully opaque */}
-        <section
-          id="contact"
-          className="min-h-[40vh] flex items-center justify-center px-6 py-24"
-          style={{ backgroundColor: "#0a0a0a" }}
-        >
-          <div className="text-center">
-            <h2 className="font-mono text-2xl font-bold text-accent mb-6">
-              Let&apos;s Build Something
-            </h2>
-            <div className="flex justify-center gap-6 text-text-secondary font-mono text-sm">
-              <a
-                href="mailto:rehanmollick07@gmail.com"
-                className="hover:text-accent-light transition-colors"
-              >
-                Email
-              </a>
-              <a
-                href="https://github.com/rehanmollick"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-accent-light transition-colors"
-              >
-                GitHub
-              </a>
-              <a
-                href="https://linkedin.com/in/rehanmollick"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-accent-light transition-colors"
-              >
-                LinkedIn
-              </a>
-            </div>
-          </div>
-        </section>
+        {/* Contact Footer */}
+        <Footer />
       </div>
     </>
   );
