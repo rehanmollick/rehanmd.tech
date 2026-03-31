@@ -1,5 +1,6 @@
 import Nav from "@/components/layout/Nav";
 import HeroScene from "@/components/three/HeroScene";
+import AboutSection from "@/components/sections/AboutSection";
 
 export default function Home() {
   return (
@@ -14,17 +15,8 @@ export default function Home() {
         {/* Transparent spacer — user sees full train scene through this */}
         <div className="h-screen" aria-hidden="true" />
 
-        {/* About Me — transparent background, train still visible behind */}
-        <section id="about" className="min-h-screen flex items-center justify-center px-6 py-24">
-          <div className="max-w-2xl text-center">
-            <h2 className="font-mono text-2xl font-bold text-accent mb-6">
-              About
-            </h2>
-            <p className="text-text-secondary leading-relaxed text-lg">
-              Placeholder — About Me card coming soon.
-            </p>
-          </div>
-        </section>
+        {/* About Me — transparent bg, train still visible behind the card */}
+        <AboutSection />
 
         {/* Fade-to-black gradient — train scene vanishes here */}
         <div

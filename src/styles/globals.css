@@ -145,6 +145,28 @@ body {
   }
 }
 
+/* About card — pixel-art / retro-game style */
+.about-card {
+  background: rgba(10, 10, 10, 0.88);
+  border: 2px solid var(--accent);
+  /* Pixelated stepped border via stacked box-shadows */
+  box-shadow:
+    /* Outer pixel steps */
+    4px 0 0 0 var(--accent-dim),
+    -4px 0 0 0 var(--accent-dim),
+    0 4px 0 0 var(--accent-dim),
+    0 -4px 0 0 var(--accent-dim),
+    /* Corner pixels */
+    4px 4px 0 0 var(--bg-primary),
+    -4px 4px 0 0 var(--bg-primary),
+    4px -4px 0 0 var(--bg-primary),
+    -4px -4px 0 0 var(--bg-primary),
+    /* Glow */
+    0 0 30px rgba(191, 87, 0, 0.15),
+    0 0 60px rgba(191, 87, 0, 0.05);
+  image-rendering: pixelated;
+}
+
 /* Code blocks in blog posts */
 pre {
   background-color: var(--bg-secondary) !important;
