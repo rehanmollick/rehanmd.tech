@@ -54,9 +54,9 @@ export default function PostProcessingEffects({
         pushing the distant tunnel into a soft bokeh.
       */}
       <DepthOfField
-        focusDistance={0.01}
-        focalLength={0.02}
-        bokehScale={2}
+        focusDistance={0.02}
+        focalLength={0.05}
+        bokehScale={1.5}
       />
 
       {/*
@@ -104,7 +104,7 @@ export default function PostProcessingEffects({
       */}
       <Vignette
         offset={0.3}
-        darkness={0.7}
+        darkness={0.5}
         blendFunction={BlendFunction.NORMAL}
       />
     </EffectComposer>

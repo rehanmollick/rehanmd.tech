@@ -12,28 +12,51 @@ import CameraEffects from "./CameraEffects";
 function Scene() {
   return (
     <>
-      {/* Camera: seated passenger POV, looking toward windows (right side / +X) */}
+      {/* Camera: seated passenger POV, looking down the car toward windows */}
       <PerspectiveCamera
         makeDefault
-        position={[-0.8, 0.6, 0]}
-        rotation={[0, Math.PI * 0.15, 0]}
-        fov={65}
+        position={[-0.5, 1.3, 2]}
+        rotation={[-0.05, Math.PI * 0.08, 0]}
+        fov={72}
         near={0.1}
         far={200}
       />
 
-      {/* Lighting */}
-      <ambientLight intensity={0.05} color="#ffffff" />
+      {/* Lighting — warm interior glow */}
+      <ambientLight intensity={0.35} color="#ffffff" />
+      {/* Main overhead lights along the car */}
       <pointLight
-        position={[0, 2.2, 0]}
-        intensity={0.4}
+        position={[0, 2.7, 0]}
+        intensity={4}
         color="#FFD4A8"
+        distance={20}
+        decay={2}
+      />
+      <pointLight
+        position={[0, 2.7, -5]}
+        intensity={3}
+        color="#FFD4A8"
+        distance={18}
+        decay={2}
+      />
+      <pointLight
+        position={[0, 2.7, 5]}
+        intensity={3}
+        color="#FFD4A8"
+        distance={18}
+        decay={2}
+      />
+      {/* Subtle accent fill from right (window side) to catch tunnel light spill */}
+      <pointLight
+        position={[3, 1.5, -3]}
+        intensity={0.8}
+        color="#FFB366"
         distance={10}
         decay={2}
       />
 
-      {/* Fog for atmosphere */}
-      <fog attach="fog" args={["#0d0d0d", 5, 60]} />
+      {/* Fog — start further so near geometry is clear */}
+      <fog attach="fog" args={["#0d0d0d", 10, 70]} />
 
       {/* Scene elements */}
       <TrainInterior />
@@ -58,7 +81,7 @@ export default function SubwayScene() {
           alpha: false,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 0.8,
+          toneMappingExposure: 1.5,
         }}
         dpr={[1, 1.5]}
         style={{ background: "#0a0a0a" }}

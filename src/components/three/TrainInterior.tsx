@@ -46,10 +46,10 @@ const LIGHT_LENGTH = 3;
 const LIGHT_WIDTH = 0.25;
 
 // --- Reusable colors (created once, never in render) ---
-const COLOR_WALL = new THREE.Color("#1a1a1a");
-const COLOR_FLOOR = new THREE.Color("#0f0f0f");
-const COLOR_SEAT = new THREE.Color("#1e1e1e");
-const COLOR_POLE = new THREE.Color("#2a2a2a");
+const COLOR_WALL = new THREE.Color("#222222");
+const COLOR_FLOOR = new THREE.Color("#141414");
+const COLOR_SEAT = new THREE.Color("#252525");
+const COLOR_POLE = new THREE.Color("#3a3a3a");
 const COLOR_LIGHT = new THREE.Color("#FFE4CC");
 const COLOR_WINDOW_FRAME = new THREE.Color("#222222");
 
@@ -442,10 +442,10 @@ function CeilingLights() {
       new THREE.MeshStandardMaterial({
         color: COLOR_LIGHT,
         emissive: COLOR_LIGHT,
-        emissiveIntensity: 1.0,
+        emissiveIntensity: 2.5,
         roughness: 0.2,
         metalness: 0.0,
-        toneMapped: false, // let bloom pick up the HDR emissive
+        toneMapped: false,
       }),
     [],
   );
@@ -455,7 +455,7 @@ function CeilingLights() {
       new THREE.MeshStandardMaterial({
         color: COLOR_LIGHT,
         emissive: COLOR_LIGHT,
-        emissiveIntensity: 1.0,
+        emissiveIntensity: 2.5,
         roughness: 0.2,
         metalness: 0.0,
         toneMapped: false,
