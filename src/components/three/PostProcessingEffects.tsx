@@ -6,7 +6,6 @@ import {
   Bloom,
   Vignette,
   Noise,
-  DepthOfField,
   ChromaticAberration,
 } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
@@ -53,11 +52,7 @@ export default function PostProcessingEffects({
         to the camera near/far range. Low values keep focus very close,
         pushing the distant tunnel into a soft bokeh.
       */}
-      <DepthOfField
-        focusDistance={0.015}
-        focalLength={0.04}
-        bokehScale={2.5}
-      />
+      {/* DOF disabled — too expensive, kills framerate */}
 
       {/*
         Bloom — makes any pixel above the luminance threshold bleed light

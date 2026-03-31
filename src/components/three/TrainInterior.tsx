@@ -124,9 +124,9 @@ function RightWall() {
 /** Tinted glass panes in each window opening */
 function WindowGlass() {
   const mat = useMemo(
-    () => new THREE.MeshPhysicalMaterial({
-      color: C_GLASS, transmission: 0.85, roughness: 0.1,
-      metalness: 0.1, thickness: 0.05, transparent: true, side: THREE.DoubleSide,
+    () => new THREE.MeshStandardMaterial({
+      color: C_GLASS, transparent: true, opacity: 0.15,
+      roughness: 0.1, metalness: 0.3, side: THREE.DoubleSide,
     }),
     [],
   );

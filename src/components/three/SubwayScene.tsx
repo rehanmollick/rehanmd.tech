@@ -45,12 +45,12 @@ function TunnelLightSpill() {
 function Scene() {
   return (
     <>
-      {/* Camera: seated on LEFT side, looking diagonally across to right windows */}
+      {/* Camera: seated on LEFT side, looking out across to right-side windows */}
       <PerspectiveCamera
         makeDefault
-        position={[-1.4, 1.1, 1]}
-        rotation={[-0.08, Math.PI * 0.18, 0]}
-        fov={68}
+        position={[-1.3, 1.1, 0.5]}
+        rotation={[-0.05, Math.PI * 0.35, 0]}
+        fov={70}
         near={0.1}
         far={200}
       />
@@ -89,9 +89,9 @@ function Scene() {
       {/* Train interior geometry */}
       <TrainInterior />
 
-      {/* In-scene info elements (replace HTML overlay) */}
+      {/* In-scene info elements — re-enabling one by one */}
       <LEDTicker />
-      <PosterFrame />
+      {/* <PosterFrame /> */}
 
       {/* Atmospheric dust particles */}
       <DustParticles />
