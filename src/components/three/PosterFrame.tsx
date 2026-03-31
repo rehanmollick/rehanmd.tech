@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState, useCallback } from "react";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 // ============================================
@@ -108,9 +109,26 @@ function createPosterTexture(): THREE.CanvasTexture {
 
 export interface PosterFrameProps {
   position?: [number, number, number];
+  onPosterClick?: () => void;
 }
 
-export default function PosterFrame({ position = [0, 0, 0] }: PosterFrameProps) {
+export default function PosterFrame({ position = [0, 0, 0], onPosterClick }: PosterFrameProps) {
+  const [hovered, setHovered] = useState(false);
+
+  const handleClick = useCallback(() => {
+    if (onPosterClick) {
+      onPosterClick();
+    } else {
+      // Fallback: dispatch custom DOM event
+      window.dispatchEvent(new CustomEvent("poster-click"));
+    }
+  }, [onPosterClick]);
+
+  // Change cursor on hover
+  useEffect(() => {
+    document.body.style.cursor = hovered ? "pointer" : "auto";
+    return () => { document.body.style.cursor = "auto"; };
+  }, [hovered]);
   const posterMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
@@ -140,6 +158,12 @@ export default function PosterFrame({ position = [0, 0, 0] }: PosterFrameProps) 
     posterMat.needsUpdate = true;
   }, [posterMat]);
 
+  // Subtle glow boost on hover
+  useFrame(() => {
+    const target = hovered ? 0.25 : 0.12;
+    posterMat.emissiveIntensity += (target - posterMat.emissiveIntensity) * 0.1;
+  });
+
   // Poster plane — wider than tall, faces -X
   const posterGeo = useMemo(() => new THREE.PlaneGeometry(POSTER_W, POSTER_H), []);
 
@@ -154,8 +178,15 @@ export default function PosterFrame({ position = [0, 0, 0] }: PosterFrameProps) 
   return (
     <group position={position}>
       <group position={[POSTER_X, POSTER_Y, POSTER_Z]}>
-        {/* Poster face */}
-        <mesh geometry={posterGeo} material={posterMat} rotation={[0, -Math.PI / 2, 0]} />
+        {/* Poster face — clickable */}
+        <mesh
+          geometry={posterGeo}
+          material={posterMat}
+          rotation={[0, -Math.PI / 2, 0]}
+          onClick={handleClick}
+          onPointerOver={() => setHovered(true)}
+          onPointerOut={() => setHovered(false)}
+        />
 
         {/* Aluminum frame */}
         <mesh geometry={hGeo} material={frameMat} position={[0, hh + ft / 2, 0]} />
