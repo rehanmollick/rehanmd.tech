@@ -12,10 +12,10 @@ import * as THREE from "three";
 const CAR_WIDTH = 4;
 const WALL = 0.15;
 
-// Between the 2nd and 3rd windows, above seat height
+// Between windows, centered vertically between seat-top and ticker
 const POSTER_X = CAR_WIDTH / 2 - 0.005;
-const POSTER_Y = 2.15;
-const POSTER_Z = 0;
+const POSTER_Y = 1.75;
+const POSTER_Z = -2;
 
 // Real transit ad proportions (~2.5:1 wide)
 const POSTER_W = 2.8; // along car (z-axis)

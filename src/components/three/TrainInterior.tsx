@@ -102,8 +102,8 @@ function createRightWallShape(): THREE.Shape {
 // --- Sub-components ---
 
 function Floor() {
-  // Worn rubber floor — slightly reflective from years of foot traffic
-  const mat = useMemo(() => stdMat(C_FLOOR, 0.55, 0.15), []);
+  // Worn rubber floor — matte dark surface
+  const mat = useMemo(() => stdMat(C_FLOOR, 0.85, 0.05), []);
   const geo = useMemo(() => new THREE.PlaneGeometry(CAR_WIDTH, CAR_LENGTH), []);
   // Center aisle stripe (subtle worn path)
   const stripeMat = useMemo(() => stdMat(new THREE.Color("#1a1a1a"), 0.5, 0.2), []);
@@ -217,8 +217,8 @@ function CeilingDetails() {
  */
 function Seats() {
   // Seat body: dark blue-gray like real transit seats
-  const seatColor = new THREE.Color("#2a2d33");
-  const sMat = useMemo(() => stdMat(seatColor, 0.85, 0.05), []);
+  const seatColor = new THREE.Color("#1e2025");
+  const sMat = useMemo(() => stdMat(seatColor, 0.92, 0.02), []);
   // Seat underside/support: darker
   const supportMat = useMemo(() => stdMat(new THREE.Color("#1a1a1a"), 0.9, 0.1), []);
   const dMat = useMemo(() => stdMat(C_POLE, 0.25, 0.85), []);
@@ -648,8 +648,6 @@ export default function TrainInterior({ position = [0, 0, 0] }: TrainInteriorPro
       <EmergencySignage />
       <FloorEdgeStrips />
       <WallPanelSeams />
-      <KickPlates />
-      <UnderSeatHeaters />
       <RouteMapFrame />
     </group>
   );

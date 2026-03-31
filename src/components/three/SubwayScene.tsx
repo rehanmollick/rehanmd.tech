@@ -54,9 +54,9 @@ function TunnelLightSpill() {
 function SetupCamera() {
   const { camera } = useThree();
   useEffect(() => {
-    camera.position.set(-1.2, 1.2, 0);
-    // Look at the right-side windows, slightly down the car
-    camera.lookAt(2.5, 1.0, -2);
+    camera.position.set(-1.0, 1.55, 0.5);
+    // Look across at the right-side windows and poster, slightly up
+    camera.lookAt(2.5, 1.7, -1.5);
     camera.updateProjectionMatrix();
   }, [camera]);
   return null;
