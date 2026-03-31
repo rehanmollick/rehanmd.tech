@@ -1,69 +1,105 @@
 "use client";
 
-import { useMemo, useEffect, useRef } from "react";
+import { useMemo, useEffect } from "react";
 import * as THREE from "three";
 
 // ============================================
-// PosterFrame - Transit-ad poster on the RIGHT
-// wall (between windows), visible from the
-// left-side seated camera. Uses CanvasTexture
-// instead of drei Text to avoid crashes.
+// PosterFrame - Large transit-ad poster on the
+// right wall between windows. Sized like a real
+// NYC/MTA overhead ad (~70x28 inches).
 // ============================================
 
 const CAR_WIDTH = 4;
 const WALL = 0.15;
 
-// Position on right wall, between the two middle windows
-const POSTER_X = CAR_WIDTH / 2 - 0.01;
-const POSTER_Y = 1.7;
-const POSTER_Z = 0; // center of car
+// Between the 2nd and 3rd windows, above seat height
+const POSTER_X = CAR_WIDTH / 2 - 0.005;
+const POSTER_Y = 2.15;
+const POSTER_Z = 0;
 
-const POSTER_W = 1.0; // z-axis
-const POSTER_H = 0.7; // y-axis
-const FRAME_T = 0.025;
-
-const C_FRAME = new THREE.Color("#333333");
+// Real transit ad proportions (~2.5:1 wide)
+const POSTER_W = 2.8; // along car (z-axis)
+const POSTER_H = 1.1; // tall (y-axis)
 
 function createPosterTexture(): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 360;
+  canvas.width = 1024;
+  canvas.height = 410;
   const ctx = canvas.getContext("2d")!;
 
-  // Background
-  ctx.fillStyle = "#0e0e0e";
-  ctx.fillRect(0, 0, 512, 360);
+  // Background — dark with subtle gradient
+  const grad = ctx.createLinearGradient(0, 0, 0, 410);
+  grad.addColorStop(0, "#0c0c0c");
+  grad.addColorStop(1, "#080808");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1024, 410);
 
-  // Burnt orange accent line at top
+  // Burnt orange accent bar at top
   ctx.fillStyle = "#BF5700";
-  ctx.fillRect(16, 16, 480, 6);
+  ctx.fillRect(0, 0, 1024, 6);
 
-  // Name
+  // Thin orange side accent
+  ctx.fillRect(0, 0, 4, 410);
+
+  // Name — large, prominent
   ctx.fillStyle = "#f5f5f5";
-  ctx.font = "bold 32px monospace";
-  ctx.fillText("Md Rehan Mollick", 24, 64);
+  ctx.font = "bold 52px monospace";
+  ctx.fillText("Md Rehan Mollick", 40, 72);
 
   // Title
-  ctx.fillStyle = "#a1a1a1";
+  ctx.fillStyle = "#BF5700";
+  ctx.font = "28px monospace";
+  ctx.fillText("Software Engineer", 40, 115);
+
+  // Subtle divider
+  ctx.fillStyle = "#2a2a2a";
+  ctx.fillRect(40, 140, 400, 1);
+
+  // Bio line
+  ctx.fillStyle = "#888888";
+  ctx.font = "18px monospace";
+  ctx.fillText("Building things my own way.", 40, 175);
+
+  // Links section — with icons represented as text
+  ctx.fillStyle = "#BF5700";
+  ctx.font = "bold 14px monospace";
+  ctx.fillText("CONNECT", 40, 220);
+
+  ctx.fillStyle = "#cccccc";
   ctx.font = "20px monospace";
-  ctx.fillText("Software Engineer", 24, 100);
+  const links = [
+    "github.com/rehanmollick",
+    "linkedin.com/in/md-rehan-mollick-674b042b4",
+    "rehanmollick07@utexas.edu",
+  ];
+  links.forEach((link, i) => {
+    // Orange bullet
+    ctx.fillStyle = "#BF5700";
+    ctx.fillRect(40, 243 + i * 36, 6, 6);
+    // Link text
+    ctx.fillStyle = "#bbbbbb";
+    ctx.font = "19px monospace";
+    ctx.fillText(link, 58, 250 + i * 36);
+  });
 
-  // Divider line
-  ctx.fillStyle = "#333333";
-  ctx.fillRect(24, 120, 200, 1);
+  // Website prominently at bottom
+  ctx.fillStyle = "#BF5700";
+  ctx.font = "bold 36px monospace";
+  ctx.fillText("rehanmd.tech", 40, 380);
 
-  // Links
-  ctx.fillStyle = "#999999";
-  ctx.font = "16px monospace";
-  ctx.fillText("github.com/rehanmollick", 24, 160);
-  ctx.fillText("linkedin.com/in/", 24, 190);
-  ctx.fillText("  md-rehan-mollick-674b042b4", 24, 214);
-  ctx.fillText("rehanmollick07[at]utexas.edu", 24, 254);
-
-  // Subtle border
-  ctx.strokeStyle = "#BF5700";
+  // QR-code-like decorative square in bottom right
+  ctx.strokeStyle = "#333333";
   ctx.lineWidth = 2;
-  ctx.strokeRect(12, 12, 488, 336);
+  ctx.strokeRect(880, 300, 100, 100);
+  ctx.fillStyle = "#1a1a1a";
+  ctx.fillRect(882, 302, 96, 96);
+  // Inner pattern
+  ctx.fillStyle = "#BF5700";
+  ctx.fillRect(900, 320, 20, 20);
+  ctx.fillRect(940, 320, 20, 20);
+  ctx.fillRect(900, 360, 20, 20);
+  ctx.fillRect(940, 360, 20, 20);
+  ctx.fillRect(920, 340, 20, 20);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -74,34 +110,29 @@ export interface PosterFrameProps {
   position?: [number, number, number];
 }
 
-export default function PosterFrame({
-  position = [0, 0, 0],
-}: PosterFrameProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
-
-  const frameMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: C_FRAME,
-        roughness: 0.4,
-        metalness: 0.7,
-      }),
-    [],
-  );
-
+export default function PosterFrame({ position = [0, 0, 0] }: PosterFrameProps) {
   const posterMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
         color: "#ffffff",
-        roughness: 0.85,
+        roughness: 0.8,
         metalness: 0.0,
         emissive: "#ffffff",
-        emissiveIntensity: 0.08,
+        emissiveIntensity: 0.12,
       }),
     [],
   );
 
-  // Create and assign texture on client only
+  const frameMat = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: "#444444",
+        roughness: 0.3,
+        metalness: 0.8,
+      }),
+    [],
+  );
+
   useEffect(() => {
     const tex = createPosterTexture();
     posterMat.map = tex;
@@ -109,20 +140,13 @@ export default function PosterFrame({
     posterMat.needsUpdate = true;
   }, [posterMat]);
 
-  const posterGeo = useMemo(
-    () => new THREE.PlaneGeometry(POSTER_H, POSTER_W),
-    [],
-  );
+  // Poster plane — wider than tall, faces -X
+  const posterGeo = useMemo(() => new THREE.PlaneGeometry(POSTER_W, POSTER_H), []);
 
-  // Frame border geos
-  const hGeo = useMemo(
-    () => new THREE.BoxGeometry(0.01, FRAME_T, POSTER_W + FRAME_T * 2),
-    [],
-  );
-  const vGeo = useMemo(
-    () => new THREE.BoxGeometry(0.01, POSTER_H + FRAME_T * 2, FRAME_T),
-    [],
-  );
+  // Frame — thin aluminum border
+  const ft = 0.02;
+  const hGeo = useMemo(() => new THREE.BoxGeometry(0.008, ft, POSTER_W + ft * 2), []);
+  const vGeo = useMemo(() => new THREE.BoxGeometry(0.008, POSTER_H + ft * 2, ft), []);
 
   const hh = POSTER_H / 2;
   const hw = POSTER_W / 2;
@@ -130,19 +154,14 @@ export default function PosterFrame({
   return (
     <group position={position}>
       <group position={[POSTER_X, POSTER_Y, POSTER_Z]}>
-        {/* Poster face — faces -X toward camera */}
-        <mesh
-          ref={meshRef}
-          geometry={posterGeo}
-          material={posterMat}
-          rotation={[0, -Math.PI / 2, 0]}
-        />
+        {/* Poster face */}
+        <mesh geometry={posterGeo} material={posterMat} rotation={[0, -Math.PI / 2, 0]} />
 
-        {/* Frame borders */}
-        <mesh geometry={hGeo} material={frameMat} position={[0, hh, 0]} />
-        <mesh geometry={hGeo} material={frameMat} position={[0, -hh, 0]} />
-        <mesh geometry={vGeo} material={frameMat} position={[0, 0, -hw]} />
-        <mesh geometry={vGeo} material={frameMat} position={[0, 0, hw]} />
+        {/* Aluminum frame */}
+        <mesh geometry={hGeo} material={frameMat} position={[0, hh + ft / 2, 0]} />
+        <mesh geometry={hGeo} material={frameMat} position={[0, -hh - ft / 2, 0]} />
+        <mesh geometry={vGeo} material={frameMat} position={[0, 0, -hw - ft / 2]} />
+        <mesh geometry={vGeo} material={frameMat} position={[0, 0, hw + ft / 2]} />
       </group>
     </group>
   );
