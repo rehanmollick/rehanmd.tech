@@ -12,12 +12,12 @@ import CameraEffects from "./CameraEffects";
 function Scene() {
   return (
     <>
-      {/* Camera: seated passenger POV, looking down the car toward windows */}
+      {/* Camera: seated on LEFT side, looking diagonally across to right windows */}
       <PerspectiveCamera
         makeDefault
-        position={[-0.5, 1.3, 2]}
-        rotation={[-0.05, Math.PI * 0.08, 0]}
-        fov={72}
+        position={[-1.4, 1.1, 1]}
+        rotation={[-0.08, Math.PI * 0.18, 0]}
+        fov={68}
         near={0.1}
         far={200}
       />
