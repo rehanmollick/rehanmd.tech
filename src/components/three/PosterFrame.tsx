@@ -1,34 +1,74 @@
 "use client";
 
-import { useMemo } from "react";
-import { Text } from "@react-three/drei";
+import { useMemo, useEffect, useRef } from "react";
 import * as THREE from "three";
 
 // ============================================
-// PosterFrame - Transit-ad-style poster on the
-// left wall with name, title, and contact links.
-// Faces +X toward the camera.
+// PosterFrame - Transit-ad poster on the RIGHT
+// wall (between windows), visible from the
+// left-side seated camera. Uses CanvasTexture
+// instead of drei Text to avoid crashes.
 // ============================================
 
 const CAR_WIDTH = 4;
+const WALL = 0.15;
 
-// Poster dimensions
-const POSTER_W = 1.2; // z-axis (along car length)
-const POSTER_H = 0.8; // y-axis
-const FRAME_T = 0.02; // frame border thickness
-const ACCENT_H = 0.02; // burnt orange accent line height
+// Position on right wall, between the two middle windows
+const POSTER_X = CAR_WIDTH / 2 - 0.01;
+const POSTER_Y = 1.7;
+const POSTER_Z = 0; // center of car
 
-// Position: left wall, above seat backrest
-const POSTER_X = -CAR_WIDTH / 2 + 0.02;
-const POSTER_Y = 1.8;
-const POSTER_Z = -2;
+const POSTER_W = 1.0; // z-axis
+const POSTER_H = 0.7; // y-axis
+const FRAME_T = 0.025;
 
 const C_FRAME = new THREE.Color("#333333");
-const C_BG = new THREE.Color("#0e0e0e");
-const C_ACCENT = new THREE.Color("#BF5700");
 
-const FONT_URL =
-  "https://fonts.gstatic.com/s/jetbrainsmono/v18/tDbY2o-flEEny0FPpRFhYMNbKjkCIQ.woff";
+function createPosterTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 360;
+  const ctx = canvas.getContext("2d")!;
+
+  // Background
+  ctx.fillStyle = "#0e0e0e";
+  ctx.fillRect(0, 0, 512, 360);
+
+  // Burnt orange accent line at top
+  ctx.fillStyle = "#BF5700";
+  ctx.fillRect(16, 16, 480, 6);
+
+  // Name
+  ctx.fillStyle = "#f5f5f5";
+  ctx.font = "bold 32px monospace";
+  ctx.fillText("Md Rehan Mollick", 24, 64);
+
+  // Title
+  ctx.fillStyle = "#a1a1a1";
+  ctx.font = "20px monospace";
+  ctx.fillText("Software Engineer", 24, 100);
+
+  // Divider line
+  ctx.fillStyle = "#333333";
+  ctx.fillRect(24, 120, 200, 1);
+
+  // Links
+  ctx.fillStyle = "#999999";
+  ctx.font = "16px monospace";
+  ctx.fillText("github.com/rehanmollick", 24, 160);
+  ctx.fillText("linkedin.com/in/", 24, 190);
+  ctx.fillText("  md-rehan-mollick-674b042b4", 24, 214);
+  ctx.fillText("rehanmollick07[at]utexas.edu", 24, 254);
+
+  // Subtle border
+  ctx.strokeStyle = "#BF5700";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(12, 12, 488, 336);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
 
 export interface PosterFrameProps {
   position?: [number, number, number];
@@ -37,6 +77,8 @@ export interface PosterFrameProps {
 export default function PosterFrame({
   position = [0, 0, 0],
 }: PosterFrameProps) {
+  const meshRef = useRef<THREE.Mesh>(null);
+
   const frameMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
@@ -47,31 +89,32 @@ export default function PosterFrame({
     [],
   );
 
-  const bgMat = useMemo(
+  const posterMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: C_BG,
-        emissive: C_BG,
-        emissiveIntensity: 0.05,
-        roughness: 0.9,
+        color: "#ffffff",
+        roughness: 0.85,
         metalness: 0.0,
+        emissive: "#ffffff",
+        emissiveIntensity: 0.08,
       }),
     [],
   );
 
-  const accentMat = useMemo(
-    () =>
-      new THREE.MeshStandardMaterial({
-        color: C_ACCENT,
-        emissive: C_ACCENT,
-        emissiveIntensity: 0.5,
-        roughness: 0.6,
-        metalness: 0.2,
-      }),
+  // Create and assign texture on client only
+  useEffect(() => {
+    const tex = createPosterTexture();
+    posterMat.map = tex;
+    posterMat.emissiveMap = tex;
+    posterMat.needsUpdate = true;
+  }, [posterMat]);
+
+  const posterGeo = useMemo(
+    () => new THREE.PlaneGeometry(POSTER_H, POSTER_W),
     [],
   );
 
-  // Frame border segments
+  // Frame border geos
   const hGeo = useMemo(
     () => new THREE.BoxGeometry(0.01, FRAME_T, POSTER_W + FRAME_T * 2),
     [],
@@ -80,37 +123,19 @@ export default function PosterFrame({
     () => new THREE.BoxGeometry(0.01, POSTER_H + FRAME_T * 2, FRAME_T),
     [],
   );
-  // Background plane
-  const bgGeo = useMemo(
-    () => new THREE.PlaneGeometry(POSTER_W, POSTER_H),
-    [],
-  );
-  // Accent line
-  const accentGeo = useMemo(
-    () => new THREE.BoxGeometry(0.005, ACCENT_H, POSTER_W - 0.04),
-    [],
-  );
 
   const hh = POSTER_H / 2;
   const hw = POSTER_W / 2;
 
-  // Text shared props
-  const textBase = {
-    font: FONT_URL,
-    anchorX: "left" as const,
-    anchorY: "top" as const,
-    maxWidth: POSTER_W - 0.1,
-    rotation: [0, Math.PI / 2, 0] as [number, number, number],
-  };
-
   return (
     <group position={position}>
       <group position={[POSTER_X, POSTER_Y, POSTER_Z]}>
-        {/* Background */}
+        {/* Poster face — faces -X toward camera */}
         <mesh
-          geometry={bgGeo}
-          material={bgMat}
-          rotation={[0, Math.PI / 2, 0]}
+          ref={meshRef}
+          geometry={posterGeo}
+          material={posterMat}
+          rotation={[0, -Math.PI / 2, 0]}
         />
 
         {/* Frame borders */}
@@ -118,69 +143,6 @@ export default function PosterFrame({
         <mesh geometry={hGeo} material={frameMat} position={[0, -hh, 0]} />
         <mesh geometry={vGeo} material={frameMat} position={[0, 0, -hw]} />
         <mesh geometry={vGeo} material={frameMat} position={[0, 0, hw]} />
-
-        {/* Accent line at top */}
-        <mesh
-          geometry={accentGeo}
-          material={accentMat}
-          position={[0.005, hh - FRAME_T - ACCENT_H / 2, 0]}
-        />
-
-        {/* Text content — offset slightly from poster surface */}
-        <group position={[0.012, 0, 0]}>
-          {/* Name */}
-          <Text
-            {...textBase}
-            fontSize={0.055}
-            color="#f5f5f5"
-            position={[0, hh - 0.08, hw - 0.05]}
-            characters="MdRehanMolick "
-          >
-            Md Rehan Mollick
-          </Text>
-
-          {/* Title */}
-          <Text
-            {...textBase}
-            fontSize={0.035}
-            color="#a1a1a1"
-            position={[0, hh - 0.17, hw - 0.05]}
-            characters="SoftwareEnginr "
-          >
-            Software Engineer
-          </Text>
-
-          {/* Links */}
-          <Text
-            {...textBase}
-            fontSize={0.03}
-            color="#a1a1a1"
-            position={[0, hh - 0.32, hw - 0.05]}
-            characters="github.com/rehanmolick"
-          >
-            github.com/rehanmollick
-          </Text>
-
-          <Text
-            {...textBase}
-            fontSize={0.025}
-            color="#a1a1a1"
-            position={[0, hh - 0.40, hw - 0.05]}
-            characters="linkedin.com/md-reha674b042"
-          >
-            linkedin.com/in/md-rehan-mollick-674b042b4
-          </Text>
-
-          <Text
-            {...textBase}
-            fontSize={0.03}
-            color="#a1a1a1"
-            position={[0, hh - 0.48, hw - 0.05]}
-            characters="rehanmolick07[t]utexs.ed"
-          >
-            rehanmollick07[at]utexas[dot]edu
-          </Text>
-        </group>
       </group>
     </group>
   );

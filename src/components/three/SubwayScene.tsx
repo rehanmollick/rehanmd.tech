@@ -16,26 +16,35 @@ import DustParticles from "./DustParticles";
  * Animated point light that simulates tunnel light spill
  * through the windows onto the interior. Oscillates along Z.
  */
+/**
+ * Simulates tunnel light spill through windows. A bright orange light
+ * sweeps along the car interior matching the tunnel light spacing/speed.
+ * Tunnel lights are spaced 20 units apart scrolling at 36 units/sec,
+ * so one passes every ~0.55 seconds.
+ */
 function TunnelLightSpill() {
   const lightRef = useRef<THREE.PointLight>(null);
 
-  useFrame((state) => {
+  useFrame((_, delta) => {
     if (!lightRef.current) return;
-    const t = state.clock.elapsedTime;
-    // Oscillate along Z to simulate passing tunnel lights
-    lightRef.current.position.z = Math.sin(t * 1.2) * 6;
-    // Pulse intensity to simulate individual lights passing
-    lightRef.current.intensity =
-      1.5 + 1.5 * Math.max(0, Math.sin(t * 3.5));
+    const light = lightRef.current;
+
+    // Move the light along Z at tunnel speed, wrap at car bounds
+    light.position.z += 36 * Math.min(delta, 0.1);
+    if (light.position.z > 10) light.position.z = -10;
+
+    // Pulse: bright flash as it passes, then dim
+    // Brightest when near center of car (z near 0)
+    const dist = Math.abs(light.position.z);
+    light.intensity = dist < 3 ? 3 * (1 - dist / 3) : 0;
   });
 
   return (
     <pointLight
       ref={lightRef}
-      position={[1.8, 1.5, 0]}
+      position={[1.5, 1.3, -10]}
       color="#FFB366"
-      intensity={1.5}
-      distance={8}
+      distance={6}
       decay={2}
     />
   );
@@ -95,7 +104,7 @@ function Scene() {
 
       {/* In-scene info elements — re-enabling one by one */}
       <LEDTicker />
-      {/* <PosterFrame /> */}
+      <PosterFrame />
 
       {/* Atmospheric dust particles */}
       <DustParticles />
