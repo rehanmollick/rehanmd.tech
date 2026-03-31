@@ -49,8 +49,8 @@ const DOOR_GAP = 0.02;
 const DOOR_ZS = [-CAR_LENGTH / 4, CAR_LENGTH / 4];
 
 // --- Colors (allocated once) ---
-const C_WALL = new THREE.Color("#222222");
-const C_FLOOR = new THREE.Color("#181818");
+const C_WALL = new THREE.Color("#2a2a2a");
+const C_FLOOR = new THREE.Color("#1e1e1e");
 const C_SEAT = new THREE.Color("#252525");
 const C_POLE = new THREE.Color("#4a4a4a");
 const C_LIGHT = new THREE.Color("#F0E8DD");
@@ -62,6 +62,14 @@ const C_CONDUIT = new THREE.Color("#1e1e1e");
 const C_VENT = new THREE.Color("#151515");
 const C_EMERG = new THREE.Color("#CC0000");
 const C_GLASS = new THREE.Color("#1a2a3a");
+const C_RUBBER = new THREE.Color("#0e0e0e");
+const C_KICK = new THREE.Color("#2a2a2a");
+const C_HEATER = new THREE.Color("#1a1a1a");
+const C_MAP_BG = new THREE.Color("#e8e4d8");
+const C_MAP_FRAME = new THREE.Color("#3a3a3a");
+const C_DOOR_GLASS = new THREE.Color("#1e2e3e");
+const C_HANDRAIL = new THREE.Color("#555555");
+const C_FLOOR_STRIPE = new THREE.Color("#BF5700");
 
 // --- Material factory helpers ---
 const stdMat = (c: THREE.Color, r: number, m: number, opts?: Partial<THREE.MeshStandardMaterialParameters>) =>
@@ -94,9 +102,18 @@ function createRightWallShape(): THREE.Shape {
 // --- Sub-components ---
 
 function Floor() {
-  const mat = useMemo(() => stdMat(C_FLOOR, 0.7, 0.1), []);
+  // Worn rubber floor — slightly reflective from years of foot traffic
+  const mat = useMemo(() => stdMat(C_FLOOR, 0.55, 0.15), []);
   const geo = useMemo(() => new THREE.PlaneGeometry(CAR_WIDTH, CAR_LENGTH), []);
-  return <mesh geometry={geo} material={mat} rotation={[-Math.PI / 2, 0, 0]} receiveShadow />;
+  // Center aisle stripe (subtle worn path)
+  const stripeMat = useMemo(() => stdMat(new THREE.Color("#1a1a1a"), 0.5, 0.2), []);
+  const stripeGeo = useMemo(() => new THREE.PlaneGeometry(1.2, CAR_LENGTH), []);
+  return (
+    <group>
+      <mesh geometry={geo} material={mat} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow />
+      <mesh geometry={stripeGeo} material={stripeMat} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.001, 0]} />
+    </group>
+  );
 }
 
 function LeftWall() {
@@ -388,6 +405,213 @@ function EmergencySignage() {
   return <group>{signs}</group>;
 }
 
+/** Rubber safety strips along floor edges where walls meet floor */
+function FloorEdgeStrips() {
+  const mat = useMemo(() => stdMat(C_RUBBER, 0.95, 0.0), []);
+  const geo = useMemo(() => new THREE.BoxGeometry(0.08, 0.02, CAR_LENGTH), []);
+  return (
+    <group>
+      <mesh geometry={geo} material={mat} position={[-CAR_WIDTH / 2 + 0.04, 0.01, 0]} />
+      <mesh geometry={geo} material={mat} position={[CAR_WIDTH / 2 - 0.04, 0.01, 0]} />
+    </group>
+  );
+}
+
+/** Subtle wall panel seam lines — vertical grooves every ~2m along both walls */
+function WallPanelSeams() {
+  const mat = useMemo(() => stdMat(new THREE.Color("#1a1a1a"), 0.9, 0.2), []);
+  const geo = useMemo(() => new THREE.BoxGeometry(0.005, CAR_HEIGHT - 0.2, 0.005), []);
+  const seams: React.JSX.Element[] = [];
+  const spacing = 2.0;
+  const count = Math.floor(CAR_LENGTH / spacing);
+
+  for (let i = 1; i < count; i++) {
+    const z = -CAR_LENGTH / 2 + spacing * i;
+    // Left wall seams
+    seams.push(
+      <mesh key={`sl${i}`} geometry={geo} material={mat}
+        position={[-CAR_WIDTH / 2 + 0.01, CAR_HEIGHT / 2, z]} />,
+    );
+    // Right wall seams (skip where windows are)
+    const h = CAR_LENGTH / 2;
+    let blocked = false;
+    for (let w = 0; w < WIN_COUNT; w++) {
+      const wz = -h + WIN_SPACE * (w + 1);
+      if (Math.abs(z - wz) < WIN_W / 2 + 0.1) { blocked = true; break; }
+    }
+    if (!blocked) {
+      seams.push(
+        <mesh key={`sr${i}`} geometry={geo} material={mat}
+          position={[CAR_WIDTH / 2 - 0.01, CAR_HEIGHT / 2, z]} />,
+      );
+    }
+  }
+  return <group>{seams}</group>;
+}
+
+/** Stainless steel kick plates under seats — protects wall from shoe scuffs */
+function KickPlates() {
+  const mat = useMemo(() => stdMat(C_KICK, 0.4, 0.6), []);
+  const dHalf = DOOR_W / 2 + 0.2;
+  const segs: [number, number][] = [
+    [-CAR_LENGTH / 2 + 0.3, DOOR_ZS[0] - dHalf],
+    [DOOR_ZS[0] + dHalf, DOOR_ZS[1] - dHalf],
+    [DOOR_ZS[1] + dHalf, CAR_LENGTH / 2 - 0.3],
+  ];
+  const els: React.JSX.Element[] = [];
+  for (const side of [-1, 1]) {
+    for (let s = 0; s < segs.length; s++) {
+      const [z0, z1] = segs[s];
+      const len = z1 - z0;
+      if (len <= 0.2) continue;
+      const geo = new THREE.BoxGeometry(0.005, 0.2, len);
+      els.push(
+        <mesh key={`kp${side}${s}`} geometry={geo} material={mat}
+          position={[side * (CAR_WIDTH / 2 - 0.003), 0.1, (z0 + z1) / 2]} />,
+      );
+    }
+  }
+  return <group>{els}</group>;
+}
+
+/** Under-seat heater/vent covers — perforated metal grilles */
+function UnderSeatHeaters() {
+  const mat = useMemo(() => stdMat(C_HEATER, 0.7, 0.4), []);
+  const dHalf = DOOR_W / 2 + 0.2;
+  const segs: [number, number][] = [
+    [-CAR_LENGTH / 2 + 0.3, DOOR_ZS[0] - dHalf],
+    [DOOR_ZS[0] + dHalf, DOOR_ZS[1] - dHalf],
+    [DOOR_ZS[1] + dHalf, CAR_LENGTH / 2 - 0.3],
+  ];
+  const els: React.JSX.Element[] = [];
+  for (const side of [-1, 1]) {
+    for (let s = 0; s < segs.length; s++) {
+      const [z0, z1] = segs[s];
+      const len = z1 - z0;
+      if (len <= 0.5) continue;
+      const geo = new THREE.BoxGeometry(BENCH_D - 0.15, 0.12, len - 0.2);
+      const bx = side * (CAR_WIDTH / 2 - BENCH_D / 2 - 0.05);
+      els.push(
+        <mesh key={`ht${side}${s}`} geometry={geo} material={mat}
+          position={[bx, 0.06, (z0 + z1) / 2]} />,
+      );
+    }
+  }
+  return <group>{els}</group>;
+}
+
+/** Small glass panels in the upper portion of each door */
+function DoorWindows() {
+  const mat = useMemo(
+    () => new THREE.MeshStandardMaterial({
+      color: C_DOOR_GLASS, transparent: true, opacity: 0.2,
+      roughness: 0.05, metalness: 0.2, side: THREE.DoubleSide,
+    }),
+    [],
+  );
+  const geo = useMemo(() => new THREE.PlaneGeometry(0.4, 0.6), []);
+  const els: React.JSX.Element[] = [];
+  const sideXs = [-CAR_WIDTH / 2, CAR_WIDTH / 2 + WALL / 2];
+  for (let sx = 0; sx < sideXs.length; sx++) {
+    for (let d = 0; d < DOOR_ZS.length; d++) {
+      const pw = (DOOR_W - DOOR_GAP) / 2;
+      const off = pw / 2 + DOOR_GAP / 2;
+      const wy = DOOR_H - 0.5;
+      els.push(
+        <mesh key={`dw${sx}${d}l`} geometry={geo} material={mat}
+          position={[sideXs[sx], wy, DOOR_ZS[d] - off]}
+          rotation={[0, Math.PI / 2, 0]} />,
+        <mesh key={`dw${sx}${d}r`} geometry={geo} material={mat}
+          position={[sideXs[sx], wy, DOOR_ZS[d] + off]}
+          rotation={[0, Math.PI / 2, 0]} />,
+      );
+    }
+  }
+  return <group>{els}</group>;
+}
+
+/** Route map / system map frame on the left wall above seats — like real NYC subway */
+function RouteMapFrame() {
+  const frameMat = useMemo(() => stdMat(C_MAP_FRAME, 0.3, 0.7), []);
+  const mapMat = useMemo(
+    () => new THREE.MeshStandardMaterial({
+      color: C_MAP_BG, roughness: 0.9, metalness: 0.0,
+      emissive: C_MAP_BG, emissiveIntensity: 0.03,
+    }),
+    [],
+  );
+
+  const mapW = 1.6;
+  const mapH = 0.5;
+  const ft = 0.02;
+  const x = -CAR_WIDTH / 2 + 0.005;
+  const y = 2.0;
+
+  const mapGeo = useMemo(() => new THREE.PlaneGeometry(mapH, mapW), []);
+  const hGeo = useMemo(() => new THREE.BoxGeometry(0.008, ft, mapW + ft * 2), []);
+  const vGeo = useMemo(() => new THREE.BoxGeometry(0.008, mapH + ft * 2, ft), []);
+
+  return (
+    <group position={[x, y, 1.5]}>
+      <mesh geometry={mapGeo} material={mapMat} rotation={[0, Math.PI / 2, 0]} />
+      <mesh geometry={hGeo} material={frameMat} position={[0, mapH / 2 + ft / 2, 0]} />
+      <mesh geometry={hGeo} material={frameMat} position={[0, -mapH / 2 - ft / 2, 0]} />
+      <mesh geometry={vGeo} material={frameMat} position={[0, 0, -mapW / 2 - ft / 2]} />
+      <mesh geometry={vGeo} material={frameMat} position={[0, 0, mapW / 2 + ft / 2]} />
+    </group>
+  );
+}
+
+/** Horizontal grab bars near doors — short bars passengers hold when standing near exits */
+function DoorGrabBars() {
+  const mat = useMemo(() => stdMat(C_HANDRAIL, 0.15, 0.9), []);
+  const barGeo = useMemo(() => new THREE.CylinderGeometry(0.018, 0.018, 0.5, 8), []);
+  const mountGeo = useMemo(() => new THREE.CylinderGeometry(0.025, 0.025, 0.04, 8), []);
+
+  const els: React.JSX.Element[] = [];
+  for (let d = 0; d < DOOR_ZS.length; d++) {
+    for (const side of [-1, 1]) {
+      const z = DOOR_ZS[d] + side * (DOOR_W / 2 + 0.15);
+      const x = -CAR_WIDTH / 2 + 0.01;
+      // Vertical bar next to door on left wall
+      els.push(
+        <mesh key={`dgb${d}${side}`} geometry={barGeo} material={mat}
+          position={[x, DOOR_H - 0.4, z]} />,
+      );
+      // Mount points
+      els.push(
+        <mesh key={`dgm${d}${side}t`} geometry={mountGeo} material={mat}
+          position={[x, DOOR_H - 0.15, z]} rotation={[0, 0, Math.PI / 2]} />,
+        <mesh key={`dgm${d}${side}b`} geometry={mountGeo} material={mat}
+          position={[x, DOOR_H - 0.65, z]} rotation={[0, 0, Math.PI / 2]} />,
+      );
+    }
+  }
+  return <group>{els}</group>;
+}
+
+/** Yellow safety stripe along floor edge near doors */
+function DoorSafetyStripes() {
+  const mat = useMemo(
+    () => new THREE.MeshStandardMaterial({
+      color: new THREE.Color("#c4a800"), roughness: 0.9, metalness: 0.0,
+      emissive: new THREE.Color("#c4a800"), emissiveIntensity: 0.05,
+    }),
+    [],
+  );
+  const geo = useMemo(() => new THREE.BoxGeometry(CAR_WIDTH - 0.4, 0.003, 0.08), []);
+  const els: React.JSX.Element[] = [];
+  for (let d = 0; d < DOOR_ZS.length; d++) {
+    for (const off of [-DOOR_W / 2 - 0.06, DOOR_W / 2 + 0.06]) {
+      els.push(
+        <mesh key={`ds${d}${off}`} geometry={geo} material={mat}
+          position={[0, 0.002, DOOR_ZS[d] + off]} />,
+      );
+    }
+  }
+  return <group>{els}</group>;
+}
+
 function EndWall({ z }: { z: number }) {
   const mat = useMemo(() => stdMat(C_WALL, 0.8, 0.3), []);
   const geo = useMemo(() => new THREE.BoxGeometry(CAR_WIDTH, CAR_HEIGHT, WALL), []);
@@ -417,8 +641,16 @@ export default function TrainInterior({ position = [0, 0, 0] }: TrainInteriorPro
       <Seats />
       <PolesAndBars />
       <Doors />
+      <DoorWindows />
+      <DoorGrabBars />
+      <DoorSafetyStripes />
       <CeilingLights />
       <EmergencySignage />
+      <FloorEdgeStrips />
+      <WallPanelSeams />
+      <KickPlates />
+      <UnderSeatHeaters />
+      <RouteMapFrame />
     </group>
   );
 }
