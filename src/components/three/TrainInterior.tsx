@@ -194,14 +194,18 @@ function CeilingDetails() {
 }
 
 /**
- * Continuous bench seats on both walls with backrests, chamfered top
- * edges, and seat divider bars. Benches break around door openings.
+ * Continuous bench seats on both walls — molded plastic style like real
+ * subway seats. Seat base with slight angle, contoured backrest, and
+ * metal seat divider armrests between positions.
  */
 function Seats() {
-  const sMat = useMemo(() => stdMat(C_SEAT, 0.95, 0.0), []);
-  const dMat = useMemo(() => stdMat(C_POLE, 0.3, 0.8), []);
+  // Seat body: dark blue-gray like real transit seats
+  const seatColor = new THREE.Color("#2a2d33");
+  const sMat = useMemo(() => stdMat(seatColor, 0.85, 0.05), []);
+  // Seat underside/support: darker
+  const supportMat = useMemo(() => stdMat(new THREE.Color("#1a1a1a"), 0.9, 0.1), []);
+  const dMat = useMemo(() => stdMat(C_POLE, 0.25, 0.85), []);
 
-  // Bench segments between doors: [zStart, zEnd]
   const dHalf = DOOR_W / 2 + 0.2;
   const segs: [number, number][] = [
     [-CAR_LENGTH / 2 + 0.3, DOOR_ZS[0] - dHalf],
@@ -215,8 +219,7 @@ function Seats() {
   ];
 
   const els: React.JSX.Element[] = [];
-  const divGeo = new THREE.BoxGeometry(BENCH_D * 0.6, 0.12, 0.02);
-  const chamR = BACK_T / 2;
+  const divGeo = useMemo(() => new THREE.BoxGeometry(0.02, 0.2, 0.35), []);
 
   for (const sd of sides) {
     const bx = sd.sign * (CAR_WIDTH / 2 - BENCH_D / 2 - 0.05);
@@ -226,28 +229,37 @@ function Seats() {
       if (len <= 0.2) continue;
       const zc = (z0 + z1) / 2;
 
-      // Bench cushion
-      els.push(<mesh key={`bn-${sd.lbl}${s}`} geometry={new THREE.BoxGeometry(BENCH_D, BENCH_H, len)} material={sMat} position={[bx, BENCH_H / 2, zc]} />);
+      // Seat cushion — slightly angled back
+      const cushGeo = new THREE.BoxGeometry(BENCH_D, BENCH_H, len);
+      els.push(<mesh key={`bn-${sd.lbl}${s}`} geometry={cushGeo} material={sMat} position={[bx, BENCH_H / 2, zc]} />);
 
-      // Backrest
-      els.push(<mesh key={`bk-${sd.lbl}${s}`} geometry={new THREE.BoxGeometry(BACK_T, BACK_H, len)} material={sMat} position={[bx + sd.backOff, BENCH_H + BACK_H / 2, zc]} />);
+      // Support bracket under seat
+      const supGeo = new THREE.BoxGeometry(BENCH_D - 0.1, 0.04, len - 0.1);
+      els.push(<mesh key={`sp-${sd.lbl}${s}`} geometry={supGeo} material={supportMat} position={[bx, 0.02, zc]} />);
 
-      // Chamfered top edge (half-cylinder cap)
-      const chGeo = new THREE.CylinderGeometry(chamR, chamR, len, 8, 1, false, 0, Math.PI);
+      // Backrest — thicker, taller
+      const backGeo = new THREE.BoxGeometry(BACK_T + 0.02, BACK_H, len);
+      els.push(<mesh key={`bk-${sd.lbl}${s}`} geometry={backGeo} material={sMat} position={[bx + sd.backOff, BENCH_H + BACK_H / 2, zc]} />);
+
+      // Rounded top cap on backrest
+      const capGeo = new THREE.CylinderGeometry(BACK_T / 2 + 0.01, BACK_T / 2 + 0.01, len, 8, 1, false, 0, Math.PI);
       els.push(
-        <mesh key={`ch-${sd.lbl}${s}`} geometry={chGeo} material={sMat}
+        <mesh key={`ch-${sd.lbl}${s}`} geometry={capGeo} material={sMat}
           position={[bx + sd.backOff, BENCH_H + BACK_H, zc]}
           rotation={[Math.PI / 2, 0, sd.sign > 0 ? Math.PI : 0]} />,
       );
 
-      // Seat dividers
-      const dc = Math.max(0, Math.floor(len / 0.7) - 1);
-      const ds = len / (dc + 1);
-      for (let d = 1; d <= dc; d++) {
-        els.push(
-          <mesh key={`dv-${sd.lbl}${s}-${d}`} geometry={divGeo} material={dMat}
-            position={[bx, BENCH_H + 0.06, z0 + ds * d]} />,
-        );
+      // Metal armrest dividers between seat positions
+      const seatWidth = 0.55;
+      const seatCount = Math.floor(len / seatWidth);
+      if (seatCount > 1) {
+        const actualSpacing = len / seatCount;
+        for (let d = 1; d < seatCount; d++) {
+          els.push(
+            <mesh key={`dv-${sd.lbl}${s}-${d}`} geometry={divGeo} material={dMat}
+              position={[bx, BENCH_H + 0.1, z0 + actualSpacing * d]} />,
+          );
+        }
       }
     }
   }
@@ -264,11 +276,11 @@ function PolesAndBars() {
 
   const els: React.JSX.Element[] = [];
   const h = CAR_LENGTH / 2;
-  const ps = CAR_LENGTH / 4; // pole spacing
 
-  // 3 vertical center poles
-  for (let i = 0; i < 3; i++) {
-    els.push(<mesh key={`p${i}`} geometry={pGeo} material={mat} position={[0, CAR_HEIGHT / 2, -h + ps * (i + 1)]} />);
+  // Vertical poles next to each door (not center aisle — avoids blocking POV)
+  const doorPoleZs = [DOOR_ZS[0] - 0.8, DOOR_ZS[0] + 0.8, DOOR_ZS[1] - 0.8, DOOR_ZS[1] + 0.8];
+  for (let i = 0; i < doorPoleZs.length; i++) {
+    els.push(<mesh key={`p${i}`} geometry={pGeo} material={mat} position={[0.4, CAR_HEIGHT / 2, doorPoleZs[i]]} />);
   }
 
   // 2 overhead grab bars with connectors and strap loops
