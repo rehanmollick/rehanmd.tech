@@ -43,8 +43,8 @@ const RIB_SPACING = 15;
 const RIB_DEPTH = 0.3;
 const RIB_INSET = 0.15; // how far ribs protrude inward from walls
 
-/** Scroll speed in units per frame (~0.4 at 60 fps ≈ 24 units/sec) */
-const SCROLL_SPEED = 0.4;
+/** Scroll speed in units per frame (~0.6 at 60 fps ≈ 36 units/sec) */
+const SCROLL_SPEED = 0.6;
 
 // --- Pre-allocated colors ---
 const COLOR_TUNNEL = new THREE.Color("#0d0d0d");

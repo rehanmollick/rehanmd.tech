@@ -28,8 +28,8 @@ const LIGHT_SPACING = 20;
 const POOL_LENGTH = LIGHT_COUNT * LIGHT_SPACING;
 
 /** Light panel dimensions (width x height) */
-const LIGHT_WIDTH = 0.3;
-const LIGHT_HEIGHT = 2.0;
+const LIGHT_WIDTH = 0.4;
+const LIGHT_HEIGHT = 2.5;
 
 /**
  * X position: offset to the right, near the tunnel wall.
@@ -48,9 +48,9 @@ const LIGHT_Y = 1.8;
  * Z scroll speed in units per frame at 60fps.
  * Negative Z = lights move toward the camera (train moves forward).
  * We use delta-time scaling so the speed is frame-rate independent.
- * Base speed: ~0.4 units/frame at 60fps = ~24 units/second.
+ * Base speed: ~0.6 units/frame at 60fps = ~36 units/second.
  */
-const SCROLL_SPEED = 24;
+const SCROLL_SPEED = 36;
 
 // --- Pre-allocated objects (created once, reused every frame) ---
 
@@ -96,17 +96,16 @@ export default function TunnelLights({
   // Material: MeshBasicMaterial with the warm tunnel light color.
   // toneMapped: false so the bright color passes through to the
   // postprocessing bloom effect without being clamped to [0,1].
-  const material = useMemo(
-    () =>
-      new THREE.MeshBasicMaterial({
-        color: COLOR_TUNNEL_LIGHT,
-        toneMapped: false,
-        side: THREE.DoubleSide,
-        // Boost apparent brightness beyond 1.0 for bloom pickup.
-        // MeshBasicMaterial.color is multiplied by this in the shader.
-      }),
-    [],
-  );
+  const material = useMemo(() => {
+    const mat = new THREE.MeshBasicMaterial({
+      color: COLOR_TUNNEL_LIGHT,
+      toneMapped: false,
+      side: THREE.DoubleSide,
+    });
+    // Boost color beyond 1.0 for stronger bloom pickup
+    mat.color.multiplyScalar(3);
+    return mat;
+  }, []);
 
   // Set initial instance matrices on first render.
   // useFrame will update them every frame, but we need valid matrices
