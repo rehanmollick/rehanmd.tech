@@ -10,6 +10,8 @@ This is NOT a generic portfolio. The aesthetic is dark, underground, techy, with
 
 ## Git Configuration
 
+Commit after every single file you create or every meaningful change. I want a granular commit history.
+
 ALL commits MUST be attributed to:
 - Name: `rehanmollick`
 - Email: `rehanmollick07@gmail.com`
@@ -104,6 +106,7 @@ This project benefits from parallel sub-agents for independent workstreams. The 
 
 ### Phase 2: Hero / 3D Train Scene (PRIORITY)
 This is the most important and complex part. Build it carefully.
+Commit after every single file you create or every meaningful change. I want a granular commit history.
 
 #### Scene Architecture:
 ```

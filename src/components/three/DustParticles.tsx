@@ -19,13 +19,13 @@ export default function DustParticles({
   return (
     <Sparkles
       position={position}
-      count={60}
-      scale={[3, 2.5, 16]}
-      size={0.3}
-      speed={0.1}
-      opacity={0.15}
-      color="#FFE8D0"
-      noise={0.3}
+      count={128}
+      scale={[3.8, 2.9, 17.5]}
+      size={0.38}
+      speed={0.13}
+      opacity={0.2}
+      color="#a7a19a"
+      noise={0.44}
     />
   );
 }

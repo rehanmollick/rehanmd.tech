@@ -1,27 +1,29 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 
 const links = [
   {
     label: "GitHub",
     href: "https://github.com/rehanmollick",
-    icon: "→",
+    display: "https://github.com/rehanmollick",
   },
   {
     label: "LinkedIn",
-    href: "https://linkedin.com/in/md-rehan-mollick-674b042b4",
-    icon: "→",
+    href: "https://www.linkedin.com/in/rehanmollick/",
+    display: "https://www.linkedin.com/in/rehanmollick/",
   },
   {
-    label: "Email",
+    label: "UT Email",
     href: "mailto:rehanmollick07@utexas.edu",
-    icon: "→",
+    display: "rehanmollick07[at]utexas[dot]edu",
+    copyValue: "rehanmollick07@utexas.edu",
   },
   {
-    label: "rehanmd.tech",
-    href: "https://rehanmd.tech",
-    icon: "→",
+    label: "Gmail",
+    href: "mailto:rehanmollick07@gmail.com",
+    display: "rehanmollick07[at]gmail[dot]com",
+    copyValue: "rehanmollick07@gmail.com",
   },
 ];
 
@@ -31,6 +33,8 @@ interface PosterLinksOverlayProps {
 }
 
 export default function PosterLinksOverlay({ open, onClose }: PosterLinksOverlayProps) {
+  const [copyNotice, setCopyNotice] = useState(false);
+
   // Close on Escape
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
@@ -46,6 +50,23 @@ export default function PosterLinksOverlay({ open, onClose }: PosterLinksOverlay
     }
   }, [open, handleKey]);
 
+  useEffect(() => {
+    if (!copyNotice) return;
+    const timeout = window.setTimeout(() => setCopyNotice(false), 1200);
+    return () => window.clearTimeout(timeout);
+  }, [copyNotice]);
+
+  const handleLinkClick = useCallback(async (e: React.MouseEvent<HTMLAnchorElement>, link: (typeof links)[number]) => {
+    if (!link.copyValue) return;
+    e.preventDefault();
+    try {
+      await navigator.clipboard.writeText(link.copyValue);
+      setCopyNotice(true);
+    } catch {
+      setCopyNotice(false);
+    }
+  }, []);
+
   if (!open) return null;
 
   return (
@@ -58,7 +79,7 @@ export default function PosterLinksOverlay({ open, onClose }: PosterLinksOverlay
 
       {/* Card */}
       <div
-        className="relative z-10 border border-accent/30 bg-bg-secondary/95 backdrop-blur-md rounded-lg px-8 py-7 max-w-sm w-full mx-4 shadow-2xl"
+        className="relative z-10 border border-accent/30 bg-bg-secondary/95 backdrop-blur-md rounded-lg px-8 py-7 max-w-md w-full mx-4 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
@@ -70,10 +91,11 @@ export default function PosterLinksOverlay({ open, onClose }: PosterLinksOverlay
         </button>
 
         {/* Header */}
-        <h3 className="font-mono text-lg font-bold text-text-primary mb-1">
-          Md Rehan Mollick
-        </h3>
-        <p className="font-mono text-sm text-accent mb-5">Software Engineer</p>
+        <div className="font-mono mb-7 pr-8">
+          <h3 className="text-lg font-bold text-text-primary">
+            Md Rehan Mollick <span className="text-accent font-normal text-sm">- Software Developer</span>
+          </h3>
+        </div>
 
         {/* Links */}
         <div className="flex flex-col gap-3">
@@ -83,17 +105,26 @@ export default function PosterLinksOverlay({ open, onClose }: PosterLinksOverlay
               href={link.href}
               target={link.href.startsWith("mailto:") ? undefined : "_blank"}
               rel="noopener noreferrer"
-              className="group flex items-center justify-between px-4 py-3 rounded border border-white/5 bg-bg-primary/60 hover:border-accent/40 hover:bg-accent/5 transition-all"
+              className="group px-4 py-3 rounded border border-white/5 bg-bg-primary/60 hover:border-accent/40 hover:bg-accent/5 transition-all"
+              onClick={(e) => void handleLinkClick(e, link)}
             >
-              <span className="font-mono text-sm text-text-secondary group-hover:text-text-primary transition-colors">
-                {link.label}
-              </span>
-              <span className="text-accent opacity-0 group-hover:opacity-100 transition-opacity font-mono text-sm">
-                {link.icon}
-              </span>
+              <div className="flex items-baseline gap-3 min-w-0">
+                <span className="font-mono text-sm text-text-secondary group-hover:text-text-primary transition-colors shrink-0">
+                  {link.label}
+                </span>
+                <span className="font-mono text-xs text-text-muted group-hover:text-text-secondary transition-colors break-all">
+                  {link.display}
+                </span>
+              </div>
             </a>
           ))}
         </div>
+
+        {copyNotice ? (
+          <p className="font-mono text-xs text-accent mt-4 text-center">
+            Email Copied
+          </p>
+        ) : null}
 
         <p className="font-mono text-xs text-text-muted mt-5 text-center">
           click anywhere to close

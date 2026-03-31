@@ -19,12 +19,18 @@ const CAR_WIDTH = 4;
 const CAR_HEIGHT = 3;
 const WALL = 0.15; // wall thickness
 
-// Windows (right wall)
-const WIN_COUNT = 4;
-const WIN_W = 2.2;
+// Windows / poster bays
 const WIN_H = 1.6;
 const WIN_Y = 1.6;
-const WIN_SPACE = CAR_LENGTH / (WIN_COUNT + 1);
+const LEFT_WINDOWS = [{ z: -7.2, width: 2.0 }];
+const RIGHT_WINDOWS = [
+  { z: -6.2, width: 2.0 },
+  { z: 1.55, width: 2.1 },
+];
+const POSTER_BAY_Z = -1.55;
+const POSTER_BAY_W = 3.4;
+const POSTER_SIDE_FILL_Z = 0.02;
+const POSTER_SIDE_FILL_W = 1.08;
 
 // Bench seats
 const BENCH_D = 0.5;
@@ -75,30 +81,6 @@ const C_FLOOR_STRIPE = new THREE.Color("#BF5700");
 const stdMat = (c: THREE.Color, r: number, m: number, opts?: Partial<THREE.MeshStandardMaterialParameters>) =>
   new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m, ...opts });
 
-// --- Right wall shape with window cutouts ---
-function createRightWallShape(): THREE.Shape {
-  const h = CAR_LENGTH / 2;
-  const shape = new THREE.Shape();
-  shape.moveTo(-h, 0);
-  shape.lineTo(h, 0);
-  shape.lineTo(h, CAR_HEIGHT);
-  shape.lineTo(-h, CAR_HEIGHT);
-  shape.lineTo(-h, 0);
-
-  for (let i = 0; i < WIN_COUNT; i++) {
-    const cz = -h + WIN_SPACE * (i + 1);
-    const hw = WIN_W / 2, hh = WIN_H / 2;
-    const hole = new THREE.Path();
-    hole.moveTo(cz - hw, WIN_Y - hh);
-    hole.lineTo(cz + hw, WIN_Y - hh);
-    hole.lineTo(cz + hw, WIN_Y + hh);
-    hole.lineTo(cz - hw, WIN_Y + hh);
-    hole.lineTo(cz - hw, WIN_Y - hh);
-    shape.holes.push(hole);
-  }
-  return shape;
-}
-
 // --- Sub-components ---
 
 function Floor() {
@@ -117,70 +99,322 @@ function Floor() {
 }
 
 function LeftWall() {
-  const mat = useMemo(() => stdMat(C_WALL, 0.8, 0.3, { side: THREE.DoubleSide }), []);
-  const geo = useMemo(() => new THREE.BoxGeometry(WALL, CAR_HEIGHT, CAR_LENGTH), []);
-  return <mesh geometry={geo} material={mat} position={[-CAR_WIDTH / 2, CAR_HEIGHT / 2, 0]} />;
+  return <SideWall side="left" />;
 }
 
 function RightWall() {
-  const geo = useMemo(() => {
-    const shape = createRightWallShape();
-    return new THREE.ExtrudeGeometry(shape, { depth: WALL, bevelEnabled: false });
-  }, []);
-  const mat = useMemo(() => stdMat(C_WALL, 0.8, 0.3, { side: THREE.DoubleSide }), []);
+  return <SideWall side="right" />;
+}
+
+function WindowModule({ side, z, width }: { side: "left" | "right"; z: number; width: number }) {
+  const sign = side === "right" ? 1 : -1;
+  const wallX = sign * (CAR_WIDTH / 2 - WALL / 2);
+  const frameX = wallX + sign * 0.01;
+  const glassX = wallX + sign * 0.005;
+  const frameMat = useMemo(() => stdMat(C_FRAME, 0.55, 0.42), []);
+  const glassMat = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: new THREE.Color("#c5d2dc"),
+        transparent: true,
+        opacity: side === "left" ? 0.16 : 0.08,
+        roughness: 0.03,
+        metalness: 0.04,
+        side: THREE.DoubleSide,
+      }),
+    [side],
+  );
+  const panelMat = useMemo(() => stdMat(C_WALL, 0.84, 0.22), []);
+  const jambGeo = useMemo(() => new THREE.BoxGeometry(WALL, WIN_H + 0.1, 0.08), []);
+  const topBotGeo = useMemo(() => new THREE.BoxGeometry(WALL, 0.05, width + 0.08), [width]);
+  const topPanelGeo = useMemo(
+    () => new THREE.BoxGeometry(WALL, 0.18, width + (side === "left" ? 0.82 : 0.42)),
+    [side, width],
+  );
+  const bottomPanelGeo = useMemo(() => new THREE.BoxGeometry(WALL, WIN_Y - WIN_H / 2, width), [width]);
+  const glassGeo = useMemo(() => new THREE.PlaneGeometry(width - 0.1, WIN_H - 0.02), [width]);
+
+  return (
+    <group>
+      <mesh
+        geometry={topPanelGeo}
+        material={panelMat}
+        position={[wallX, 2.61, z]}
+        castShadow
+        receiveShadow
+      />
+      <mesh
+        geometry={bottomPanelGeo}
+        material={panelMat}
+        position={[wallX, (WIN_Y - WIN_H / 2) / 2, z]}
+        castShadow
+        receiveShadow
+      />
+      <mesh geometry={jambGeo} material={panelMat} position={[wallX, WIN_Y, z - width / 2 - 0.04]} castShadow receiveShadow />
+      <mesh geometry={jambGeo} material={panelMat} position={[wallX, WIN_Y, z + width / 2 + 0.04]} castShadow receiveShadow />
+      <mesh geometry={topBotGeo} material={frameMat} position={[frameX, WIN_Y + WIN_H / 2, z]} castShadow receiveShadow />
+      <mesh geometry={topBotGeo} material={frameMat} position={[frameX, WIN_Y - WIN_H / 2, z]} castShadow receiveShadow />
+      <mesh geometry={jambGeo} material={frameMat} position={[frameX, WIN_Y, z - width / 2]} castShadow receiveShadow />
+      <mesh geometry={jambGeo} material={frameMat} position={[frameX, WIN_Y, z + width / 2]} castShadow receiveShadow />
+      <mesh
+        geometry={glassGeo}
+        material={glassMat}
+        position={[glassX, WIN_Y, z]}
+        rotation={[0, sign * Math.PI / 2, 0]}
+      />
+    </group>
+  );
+}
+
+function DoorReveal({ side, z }: { side: "left" | "right"; z: number }) {
+  const sign = side === "right" ? 1 : -1;
+  const wallX = sign * (CAR_WIDTH / 2 - WALL / 2);
+  const frameMat = useMemo(() => stdMat(new THREE.Color("#202020"), 0.78, 0.24), []);
+  const headerGeo = useMemo(() => new THREE.BoxGeometry(WALL, 0.18, DOOR_W + 0.18), []);
+  const stileGeo = useMemo(() => new THREE.BoxGeometry(WALL, DOOR_H, 0.14), []);
+
+  return (
+    <group>
+      <mesh geometry={headerGeo} material={frameMat} position={[wallX, 2.61, z]} castShadow receiveShadow />
+      <mesh geometry={stileGeo} material={frameMat} position={[wallX, DOOR_H / 2, z - DOOR_W / 2 - 0.07]} castShadow receiveShadow />
+      <mesh geometry={stileGeo} material={frameMat} position={[wallX, DOOR_H / 2, z + DOOR_W / 2 + 0.07]} castShadow receiveShadow />
+    </group>
+  );
+}
+
+function PosterBayPanel() {
+  const mat = useMemo(() => stdMat(new THREE.Color("#252525"), 0.86, 0.16), []);
+  const geo = useMemo(() => new THREE.BoxGeometry(WALL, 1.45, POSTER_BAY_W), []);
+  return <mesh geometry={geo} material={mat} position={[CAR_WIDTH / 2 - WALL / 2, 1.62, POSTER_BAY_Z]} castShadow receiveShadow />;
+}
+
+function PosterSideWallFill() {
+  const mat = useMemo(() => stdMat(new THREE.Color("#252525"), 0.86, 0.16), []);
+  const geo = useMemo(() => new THREE.BoxGeometry(WALL, 1.45, POSTER_SIDE_FILL_W), []);
+  const lowerGeo = useMemo(() => new THREE.BoxGeometry(WALL + 0.03, 1.08, POSTER_SIDE_FILL_W + 0.2), []);
+
+  return (
+    <group>
+      <mesh
+        geometry={geo}
+        material={mat}
+        position={[CAR_WIDTH / 2 - WALL / 2, 1.62, POSTER_SIDE_FILL_Z]}
+        castShadow
+        receiveShadow
+      />
+      <mesh
+        geometry={lowerGeo}
+        material={mat}
+        position={[CAR_WIDTH / 2 - WALL / 2 - 0.01, 0.54, POSTER_SIDE_FILL_Z + 0.04]}
+        castShadow
+        receiveShadow
+      />
+    </group>
+  );
+}
+
+function UpperWallBand() {
+  const mat = useMemo(() => stdMat(C_WALL, 0.84, 0.22), []);
+  const upperGeo = useMemo(() => new THREE.BoxGeometry(WALL, 0.2, CAR_LENGTH), []);
+  const lowerGeo = useMemo(() => new THREE.BoxGeometry(WALL, 0.12, CAR_LENGTH), []);
+
+  return (
+    <group>
+      <mesh
+        geometry={upperGeo}
+        material={mat}
+        position={[CAR_WIDTH / 2 - WALL / 2, 2.76, 0]}
+        castShadow
+        receiveShadow
+      />
+      <mesh
+        geometry={upperGeo}
+        material={mat}
+        position={[-CAR_WIDTH / 2 + WALL / 2, 2.76, 0]}
+        castShadow
+        receiveShadow
+      />
+      <mesh
+        geometry={lowerGeo}
+        material={mat}
+        position={[CAR_WIDTH / 2 - WALL / 2, 2.36, 0]}
+        castShadow
+        receiveShadow
+      />
+      <mesh
+        geometry={lowerGeo}
+        material={mat}
+        position={[-CAR_WIDTH / 2 + WALL / 2, 2.36, 0]}
+        castShadow
+        receiveShadow
+      />
+    </group>
+  );
+}
+
+function UnderTickerFascia() {
+  const mat = useMemo(() => stdMat(new THREE.Color("#242322"), 0.86, 0.18), []);
+  const geo = useMemo(() => new THREE.BoxGeometry(0.08, 0.24, CAR_LENGTH - 0.4), []);
+
+  return (
+    <group>
+      <mesh
+        geometry={geo}
+        material={mat}
+        position={[CAR_WIDTH / 2 - 0.04, 2.43, 0]}
+        castShadow
+        receiveShadow
+      />
+      <mesh
+        geometry={geo}
+        material={mat}
+        position={[-CAR_WIDTH / 2 + 0.16, 2.43, 0]}
+        castShadow
+        receiveShadow
+      />
+    </group>
+  );
+}
+
+function PosterHeaderFill() {
+  const mat = useMemo(() => stdMat(new THREE.Color("#242322"), 0.86, 0.18), []);
+  const geo = useMemo(() => new THREE.PlaneGeometry(POSTER_BAY_W + 0.55, 0.34), []);
+
   return (
     <mesh
       geometry={geo}
       material={mat}
-      position={[CAR_WIDTH / 2 + WALL, 0, 0]}
-      rotation={[0, Math.PI / 2, 0]}
+      position={[CAR_WIDTH / 2 - 0.2, 2.54, POSTER_BAY_Z]}
+      rotation={[0, -Math.PI / 2, 0]}
+      castShadow
+      receiveShadow
     />
   );
 }
 
-/** Tinted glass panes in each window opening */
-function WindowGlass() {
-  const mat = useMemo(
-    () => new THREE.MeshStandardMaterial({
-      color: C_GLASS, transparent: true, opacity: 0.15,
-      roughness: 0.1, metalness: 0.3, side: THREE.DoubleSide,
-    }),
-    [],
+function FirstVisibleWindowHeaderFill() {
+  const mat = useMemo(() => stdMat(new THREE.Color("#242322"), 0.86, 0.18), []);
+  const geo = useMemo(() => new THREE.PlaneGeometry(7.2, 0.9), []);
+
+  return (
+    <mesh
+      geometry={geo}
+      material={mat}
+      position={[CAR_WIDTH / 2 - 0.22, 2.84, -6.2]}
+      rotation={[0, -Math.PI / 2, 0]}
+      castShadow
+      receiveShadow
+    />
   );
-  const geo = useMemo(() => new THREE.PlaneGeometry(WIN_H, WIN_W), []);
-  const h = CAR_LENGTH / 2;
-  const x = CAR_WIDTH / 2 + WALL / 2;
-  const panes = [];
-  for (let i = 0; i < WIN_COUNT; i++) {
-    panes.push(
-      <mesh key={i} geometry={geo} material={mat}
-        position={[x, WIN_Y, -h + WIN_SPACE * (i + 1)]}
-        rotation={[0, Math.PI / 2, 0]} />,
-    );
-  }
-  return <group>{panes}</group>;
 }
 
-function WindowFrames() {
-  const mat = useMemo(() => stdMat(C_FRAME, 0.7, 0.4), []);
-  const ft = 0.06, fd = WALL + 0.04;
-  const hGeo = useMemo(() => new THREE.BoxGeometry(fd, ft, WIN_W + ft * 2), []);
-  const vGeo = useMemo(() => new THREE.BoxGeometry(fd, WIN_H + ft * 2, ft), []);
+function LeftWindowHeaderFill() {
+  const mat = useMemo(() => stdMat(new THREE.Color("#242322"), 0.86, 0.18), []);
+  const geo = useMemo(() => new THREE.BoxGeometry(0.14, 0.34, 3.4), []);
 
-  const frames: React.JSX.Element[] = [];
-  const h = CAR_LENGTH / 2;
-  for (let i = 0; i < WIN_COUNT; i++) {
-    const cz = -h + WIN_SPACE * (i + 1);
-    const x = CAR_WIDTH / 2 + WALL / 2;
-    const hh = WIN_H / 2;
-    frames.push(
-      <mesh key={`t${i}`} geometry={hGeo} material={mat} position={[x, WIN_Y + hh, cz]} />,
-      <mesh key={`b${i}`} geometry={hGeo} material={mat} position={[x, WIN_Y - hh, cz]} />,
-      <mesh key={`l${i}`} geometry={vGeo} material={mat} position={[x, WIN_Y, cz - WIN_W / 2]} />,
-      <mesh key={`r${i}`} geometry={vGeo} material={mat} position={[x, WIN_Y, cz + WIN_W / 2]} />,
-    );
+  return (
+    <mesh
+      geometry={geo}
+      material={mat}
+      position={[-CAR_WIDTH / 2 + 0.18, 2.45, -7.2]}
+      castShadow
+      receiveShadow
+    />
+  );
+}
+
+function RightWindowSeamCovers() {
+  const mat = useMemo(() => stdMat(new THREE.Color("#242322"), 0.86, 0.18), []);
+  const topGeo = useMemo(() => new THREE.PlaneGeometry(3.3, 0.12), []);
+  const sideGeo = useMemo(() => new THREE.PlaneGeometry(0.12, 2.05), []);
+  const patchGeo = useMemo(() => new THREE.PlaneGeometry(0.34, 0.18), []);
+
+  return (
+    <group position={[CAR_WIDTH / 2 - 0.22, 0, 0]}>
+      <mesh
+        geometry={topGeo}
+        material={mat}
+        position={[0, 2.5, 1.46]}
+        rotation={[0, -Math.PI / 2, 0]}
+      />
+      <mesh
+        geometry={sideGeo}
+        material={mat}
+        position={[0, 1.58, 0.42]}
+        rotation={[0, -Math.PI / 2, 0]}
+      />
+      <mesh
+        geometry={patchGeo}
+        material={mat}
+        position={[0, 2.6, 0.72]}
+        rotation={[0, -Math.PI / 2, 0]}
+      />
+    </group>
+  );
+}
+
+function buildSpans(features: Array<{ z: number; width: number }>) {
+  const left = -CAR_LENGTH / 2;
+  const right = CAR_LENGTH / 2;
+  const sorted = [...features].sort((a, b) => a.z - b.z);
+  const spans: [number, number][] = [];
+  let cursor = left;
+
+  for (const feature of sorted) {
+    const start = feature.z - feature.width / 2;
+    const end = feature.z + feature.width / 2;
+    if (start > cursor) spans.push([cursor, start]);
+    cursor = Math.max(cursor, end);
   }
-  return <group>{frames}</group>;
+  if (cursor < right) spans.push([cursor, right]);
+  return spans;
+}
+
+function SideWall({ side }: { side: "left" | "right" }) {
+  const sign = side === "right" ? 1 : -1;
+  const wallX = sign * (CAR_WIDTH / 2 - WALL / 2);
+  const wallMat = useMemo(() => stdMat(C_WALL, 0.82, 0.22), []);
+  const features = side === "right"
+    ? [
+        ...RIGHT_WINDOWS.map(({ z, width }) => ({ z, width: width + 0.18 })),
+        { z: POSTER_SIDE_FILL_Z, width: POSTER_SIDE_FILL_W + 0.04 },
+        ...DOOR_ZS.map((z) => ({ z, width: DOOR_W + 0.2 })),
+      ]
+    : [
+        ...LEFT_WINDOWS.map(({ z, width }) => ({ z, width: width + 0.18 })),
+        ...DOOR_ZS.map((z) => ({ z, width: DOOR_W + 0.2 })),
+      ];
+  const spans = useMemo(() => buildSpans(features), [features]);
+
+  return (
+    <group>
+      {spans.map(([z0, z1], i) => {
+        const len = z1 - z0;
+        if (len <= 0.05) return null;
+        return (
+          <mesh
+            key={`${side}-span-${i}`}
+            geometry={new THREE.BoxGeometry(WALL, side === "right" ? 2.52 : 2.52, len)}
+            material={wallMat}
+            position={[wallX, 1.26, (z0 + z1) / 2]}
+            castShadow
+            receiveShadow
+          />
+        );
+      })}
+
+      {(side === "right" ? RIGHT_WINDOWS : LEFT_WINDOWS).map(({ z, width }, i) => (
+        <WindowModule key={`${side}-window-${i}`} side={side} z={z} width={width} />
+      ))}
+
+      {DOOR_ZS.map((z, i) => (
+        <DoorReveal key={`${side}-door-${i}`} side={side} z={z} />
+      ))}
+
+      {side === "right" ? <PosterBayPanel /> : null}
+      {side === "right" ? <PosterSideWallFill /> : null}
+    </group>
+  );
 }
 
 function Ceiling() {
@@ -216,12 +450,11 @@ function CeilingDetails() {
  * metal seat divider armrests between positions.
  */
 function Seats() {
-  // Seat body: dark blue-gray like real transit seats
-  const seatColor = new THREE.Color("#1e2025");
-  const sMat = useMemo(() => stdMat(seatColor, 0.92, 0.02), []);
-  // Seat underside/support: darker
+  const seatColor = new THREE.Color("#353b44");
+  const accentColor = new THREE.Color("#252a31");
+  const sMat = useMemo(() => stdMat(seatColor, 0.88, 0.04), []);
+  const accentMat = useMemo(() => stdMat(accentColor, 0.84, 0.05), []);
   const supportMat = useMemo(() => stdMat(new THREE.Color("#1a1a1a"), 0.9, 0.1), []);
-  const dMat = useMemo(() => stdMat(C_POLE, 0.25, 0.85), []);
 
   const dHalf = DOOR_W / 2 + 0.2;
   const segs: [number, number][] = [
@@ -236,51 +469,135 @@ function Seats() {
   ];
 
   const els: React.JSX.Element[] = [];
-  const divGeo = useMemo(() => new THREE.BoxGeometry(0.02, 0.2, 0.35), []);
+  const seatWidth = 0.62;
+  const seatGap = 0;
+  const minClusterGap = 0.26;
+  const baseDepth = BENCH_D - 0.08;
+  const baseHeight = 0.09;
+  const frontRadius = 0.08;
+  const backThickness = 0.09;
+  const legGeo = useMemo(() => new THREE.BoxGeometry(0.05, 0.34, 0.05), []);
 
   for (const sd of sides) {
-    const bx = sd.sign * (CAR_WIDTH / 2 - BENCH_D / 2 - 0.05);
+    const bx = sd.sign * (CAR_WIDTH / 2 - BENCH_D / 2 - 0.17);
     for (let s = 0; s < segs.length; s++) {
       const [z0, z1] = segs[s];
       const len = z1 - z0;
-      if (len <= 0.2) continue;
-      const zc = (z0 + z1) / 2;
+      if (len <= 1.0) continue;
 
-      // Seat cushion — slightly angled back
-      const cushGeo = new THREE.BoxGeometry(BENCH_D, BENCH_H, len);
-      els.push(<mesh key={`bn-${sd.lbl}${s}`} geometry={cushGeo} material={sMat} position={[bx, BENCH_H / 2, zc]} />);
+      const seatsPerCluster = 3;
+      const clusterSize = seatsPerCluster * seatWidth + (seatsPerCluster - 1) * seatGap;
+      const clusterCount = Math.max(1, Math.floor((len + minClusterGap) / (clusterSize + minClusterGap)));
+      const clusterGap = clusterCount > 1
+        ? (len - clusterCount * clusterSize) / (clusterCount - 1)
+        : 0;
+      const startZ = z0 + seatWidth / 2;
 
-      // Support bracket under seat
-      const supGeo = new THREE.BoxGeometry(BENCH_D - 0.1, 0.04, len - 0.1);
-      els.push(<mesh key={`sp-${sd.lbl}${s}`} geometry={supGeo} material={supportMat} position={[bx, 0.02, zc]} />);
+      for (let c = 0; c < clusterCount; c++) {
+        const clusterStart = startZ + c * (clusterSize + clusterGap);
+        for (let i = 0; i < seatsPerCluster; i++) {
+          const posterClusterShift = sd.lbl === "r" && s === 1 ? 0.32 : 0;
+          const seatZ = clusterStart + i * (seatWidth + seatGap) + posterClusterShift;
+          const curveX = bx - sd.sign * 0.025;
+          const backX = bx + sd.backOff;
 
-      // Backrest — thicker, taller
-      const backGeo = new THREE.BoxGeometry(BACK_T + 0.02, BACK_H, len);
-      els.push(<mesh key={`bk-${sd.lbl}${s}`} geometry={backGeo} material={sMat} position={[bx + sd.backOff, BENCH_H + BACK_H / 2, zc]} />);
+          const cushionGeo = new THREE.BoxGeometry(baseDepth, baseHeight, seatWidth);
+          const frontGeo = new THREE.CylinderGeometry(frontRadius, frontRadius, seatWidth, 12);
+          const backGeo = new THREE.BoxGeometry(backThickness, BACK_H - 0.04, seatWidth);
+          const topCapGeo = new THREE.CylinderGeometry(0.045, 0.045, seatWidth, 12);
+          const supportGeo = new THREE.BoxGeometry(baseDepth - 0.08, 0.04, seatWidth - 0.08);
 
-      // Rounded top cap on backrest
-      const capGeo = new THREE.CylinderGeometry(BACK_T / 2 + 0.01, BACK_T / 2 + 0.01, len, 8, 1, false, 0, Math.PI);
-      els.push(
-        <mesh key={`ch-${sd.lbl}${s}`} geometry={capGeo} material={sMat}
-          position={[bx + sd.backOff, BENCH_H + BACK_H, zc]}
-          rotation={[Math.PI / 2, 0, sd.sign > 0 ? Math.PI : 0]} />,
-      );
-
-      // Metal armrest dividers between seat positions
-      const seatWidth = 0.55;
-      const seatCount = Math.floor(len / seatWidth);
-      if (seatCount > 1) {
-        const actualSpacing = len / seatCount;
-        for (let d = 1; d < seatCount; d++) {
           els.push(
-            <mesh key={`dv-${sd.lbl}${s}-${d}`} geometry={divGeo} material={dMat}
-              position={[bx, BENCH_H + 0.1, z0 + actualSpacing * d]} />,
+            <mesh
+              key={`cush-${sd.lbl}${s}-${c}-${i}`}
+              geometry={cushionGeo}
+              material={sMat}
+              position={[curveX, BENCH_H - 0.02, seatZ]}
+              rotation={[0, 0, -sd.sign * 0.07]}
+            />
+          );
+          els.push(
+            <mesh
+              key={`front-${sd.lbl}${s}-${c}-${i}`}
+              geometry={frontGeo}
+              material={accentMat}
+              position={[bx - sd.sign * (baseDepth / 2 - 0.02), BENCH_H - 0.04, seatZ]}
+              rotation={[Math.PI / 2, 0, 0]}
+            />
+          );
+          els.push(
+            <mesh
+              key={`back-${sd.lbl}${s}-${c}-${i}`}
+              geometry={backGeo}
+              material={sMat}
+              position={[backX, BENCH_H + BACK_H / 2 - 0.02, seatZ]}
+              rotation={[0, 0, sd.sign * 0.08]}
+            />
+          );
+          els.push(
+            <mesh
+              key={`top-${sd.lbl}${s}-${c}-${i}`}
+              geometry={topCapGeo}
+              material={accentMat}
+              position={[backX + sd.sign * 0.005, BENCH_H + BACK_H - 0.02, seatZ]}
+              rotation={[Math.PI / 2, 0, sd.sign > 0 ? Math.PI : 0]}
+            />
+          );
+          els.push(
+            <mesh
+              key={`support-${sd.lbl}${s}-${c}-${i}`}
+              geometry={supportGeo}
+              material={supportMat}
+              position={[bx, 0.1, seatZ]}
+            />
+          );
+          els.push(
+            <mesh
+              key={`leg-l-${sd.lbl}${s}-${c}-${i}`}
+              geometry={legGeo}
+              material={supportMat}
+              position={[bx - sd.sign * 0.04, 0.17, seatZ - seatWidth * 0.25]}
+            />
+          );
+          els.push(
+            <mesh
+              key={`leg-r-${sd.lbl}${s}-${c}-${i}`}
+              geometry={legGeo}
+              material={supportMat}
+              position={[bx - sd.sign * 0.04, 0.17, seatZ + seatWidth * 0.25]}
+            />
           );
         }
       }
     }
   }
   return <group>{els}</group>;
+}
+
+function StandingRailCluster() {
+  const poleMat = useMemo(() => stdMat(new THREE.Color("#5b6068"), 0.18, 0.88), []);
+  const poleGeo = useMemo(() => new THREE.CylinderGeometry(0.025, 0.025, CAR_HEIGHT, 12), []);
+
+  return (
+    <mesh
+      geometry={poleGeo}
+      material={poleMat}
+      position={[1.08, CAR_HEIGHT / 2, -3.95]}
+    />
+  );
+}
+
+function RightWindowPole() {
+  const poleMat = useMemo(() => stdMat(new THREE.Color("#5b6068"), 0.18, 0.88), []);
+  const poleGeo = useMemo(() => new THREE.CylinderGeometry(0.026, 0.026, 1.95, 12), []);
+
+  return (
+    <mesh
+      geometry={poleGeo}
+      material={poleMat}
+      position={[1.18, 1.02, 0.42]}
+    />
+  );
 }
 
 /** Vertical poles, horizontal grab bars, ceiling connectors, strap loops */
@@ -290,10 +607,10 @@ function PolesAndBars() {
   const bGeo = useMemo(() => new THREE.CylinderGeometry(BAR_R, BAR_R, CAR_LENGTH - 2, 10), []);
   const sGeo = useMemo(() => new THREE.TorusGeometry(0.06, 0.012, 8, 16), []);
   const cGeo = useMemo(() => new THREE.CylinderGeometry(0.01, 0.01, CAR_HEIGHT - BAR_Y, 6), []);
+  const strapGeo = useMemo(() => new THREE.CylinderGeometry(0.008, 0.008, 0.16, 6), []);
 
   const els: React.JSX.Element[] = [];
   const h = CAR_LENGTH / 2;
-
   // Vertical poles next to each door (not center aisle — avoids blocking POV)
   const doorPoleZs = [DOOR_ZS[0] - 0.8, DOOR_ZS[0] + 0.8, DOOR_ZS[1] - 0.8, DOOR_ZS[1] + 0.8];
   for (let i = 0; i < doorPoleZs.length; i++) {
@@ -305,17 +622,15 @@ function PolesAndBars() {
     const bi = bx > 0 ? 1 : 0;
     els.push(<mesh key={`gb${bi}`} geometry={bGeo} material={mat} position={[bx, BAR_Y, 0]} rotation={[Math.PI / 2, 0, 0]} />);
 
-    // Vertical connectors ceiling-to-bar (5 per bar)
-    const cSpace = (CAR_LENGTH - 2) / 6;
+    // Use one shared set of hanger points so the rods, straps, and rings stay aligned.
+    const hangerSpace = (CAR_LENGTH - 2) / 6;
     const cy = (CAR_HEIGHT + BAR_Y) / 2;
-    for (let c = 0; c < 5; c++) {
-      els.push(<mesh key={`cn${bi}-${c}`} geometry={cGeo} material={mat} position={[bx, cy, -h + 1 + cSpace * (c + 1)]} />);
-    }
-
-    // Hanging strap loops (5 per bar)
-    const sSpace = (CAR_LENGTH - 4) / 6;
-    for (let s = 0; s < 5; s++) {
-      els.push(<mesh key={`st${bi}-${s}`} geometry={sGeo} material={mat} position={[bx, BAR_Y - 0.12, -h + 2 + sSpace * (s + 1)]} />);
+    const hangerZs = Array.from({ length: 5 }, (_, i) => -h + 1 + hangerSpace * (i + 1));
+    for (let i = 0; i < hangerZs.length; i++) {
+      const z = hangerZs[i];
+      els.push(<mesh key={`cn${bi}-${i}`} geometry={cGeo} material={mat} position={[bx, cy, z]} />);
+      els.push(<mesh key={`sp${bi}-${i}`} geometry={strapGeo} material={mat} position={[bx, BAR_Y - 0.09, z]} />);
+      els.push(<mesh key={`st${bi}-${i}`} geometry={sGeo} material={mat} position={[bx, BAR_Y - 0.2, z]} />);
     }
   }
   return <group>{els}</group>;
@@ -331,8 +646,8 @@ function Doors() {
 
   const els: React.JSX.Element[] = [];
   const sideXs = [
-    { x: -CAR_WIDTH / 2, l: "l" },
-    { x: CAR_WIDTH / 2 + WALL / 2, l: "r" },
+    { x: -CAR_WIDTH / 2 + WALL / 2, l: "l" },
+    { x: CAR_WIDTH / 2 - WALL / 2, l: "r" },
   ];
 
   for (const side of sideXs) {
@@ -388,7 +703,7 @@ function CeilingLights() {
 function EmergencySignage() {
   const mat = useMemo(
     () => new THREE.MeshStandardMaterial({
-      color: C_EMERG, emissive: C_EMERG, emissiveIntensity: 0.3,
+      color: new THREE.Color("#661111"), emissive: new THREE.Color("#661111"), emissiveIntensity: 0.02,
       roughness: 0.8, metalness: 0.1,
     }),
     [],
@@ -433,11 +748,9 @@ function WallPanelSeams() {
         position={[-CAR_WIDTH / 2 + 0.01, CAR_HEIGHT / 2, z]} />,
     );
     // Right wall seams (skip where windows are)
-    const h = CAR_LENGTH / 2;
     let blocked = false;
-    for (let w = 0; w < WIN_COUNT; w++) {
-      const wz = -h + WIN_SPACE * (w + 1);
-      if (Math.abs(z - wz) < WIN_W / 2 + 0.1) { blocked = true; break; }
+    for (const window of RIGHT_WINDOWS) {
+      if (Math.abs(z - window.z) < window.width / 2 + 0.1) { blocked = true; break; }
     }
     if (!blocked) {
       seams.push(
@@ -511,7 +824,7 @@ function DoorWindows() {
   );
   const geo = useMemo(() => new THREE.PlaneGeometry(0.4, 0.6), []);
   const els: React.JSX.Element[] = [];
-  const sideXs = [-CAR_WIDTH / 2, CAR_WIDTH / 2 + WALL / 2];
+  const sideXs = [-CAR_WIDTH / 2 + WALL / 2 - 0.01, CAR_WIDTH / 2 - WALL / 2 + 0.01];
   for (let sx = 0; sx < sideXs.length; sx++) {
     for (let d = 0; d < DOOR_ZS.length; d++) {
       const pw = (DOOR_W - DOOR_GAP) / 2;
@@ -632,18 +945,23 @@ export default function TrainInterior({ position = [0, 0, 0] }: TrainInteriorPro
       <Floor />
       <LeftWall />
       <RightWall />
-      <WindowGlass />
-      <WindowFrames />
+      <UpperWallBand />
+      <UnderTickerFascia />
+      <FirstVisibleWindowHeaderFill />
+      <LeftWindowHeaderFill />
+      <PosterHeaderFill />
+      <RightWindowSeamCovers />
       <Ceiling />
       <CeilingDetails />
       <EndWall z={-CAR_LENGTH / 2} />
       <EndWall z={CAR_LENGTH / 2} />
       <Seats />
+      <StandingRailCluster />
+      <RightWindowPole />
       <PolesAndBars />
       <Doors />
       <DoorWindows />
       <DoorGrabBars />
-      <DoorSafetyStripes />
       <CeilingLights />
       <EmergencySignage />
       <FloorEdgeStrips />

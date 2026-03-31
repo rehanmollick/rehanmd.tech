@@ -1,0 +1,51 @@
+The train scene needs a major overhaul. The current version is too bare and geometric. I need photorealistic urban metro vibes. Here's exactly what to change:
+
+CAMERA POV:
+- Reposition the camera to simulate sitting on the LEFT side of the train
+- Camera should be at seated height (~1.1 units up from floor)
+- Looking diagonally across the car toward the right-side windows at roughly a 30-degree angle
+- Slight downward tilt like a person naturally sits
+
+TRAIN INTERIOR — MAKE IT DETAILED AND REALISTIC:
+- Seats: Replace box geometry with proper bench-style metro seats with backrests, slightly curved, dark navy/charcoal fabric material with subtle texture. Seats should line both walls of the car.
+- Floor: Dark speckled/textured floor like real metro rubber flooring. Use a noise-based material or subtle bump map.
+- Ceiling: Add recessed panels, ventilation grates (simple geometry), and cable conduit running lengthwise
+- Poles: Multiple vertical and horizontal grab poles, chrome/brushed metal material with environment reflections
+- Doors: Add metro-style sliding door geometry on both sides (recessed panels with rubber gaskets)
+- Windows: Larger, more realistic rectangular windows with slight green/blue tint and subtle reflection
+
+TRAIN DETAILS — THE STUFF THAT MAKES IT FEEL REAL:
+- LED ticker/marquee at the top of the car (the scrolling text strip above the windows): This should display "Md Rehan Mollick — Software Engineer — rehanmd.tech" scrolling across. Make it an emissive material with burnt orange text. This replaces the static name overlay.
+- Poster frame: Add a rectangular poster frame on the wall visible from the seated POV. The poster should have a dark background with my links displayed cleanly:
+  - GitHub: github.com/rehanmollick
+  - LinkedIn: linkedin.com/in/md-rehan-mollick-674b042b4
+  - Email: rehanmollick07[at]utexas[dot]edu
+  - Make the poster look like a real transit ad — slight frame, maybe a subtle burnt orange accent border
+  - Use a canvas texture or HTML-to-texture for the poster text
+- Handrails: Add overhead horizontal bars running the length of the car with hanging straps/loops
+- Emergency signage: Small red/white signs near doors (just colored geometry, adds realism)
+- Subtle floor reflections from the interior lights
+
+ATMOSPHERE AND LIGHTING:
+- Much more fog inside the car — visible haze/atmosphere like a humid night
+- Interior lighting: Flickering fluorescent tubes on the ceiling (2-3 long rectangular emissive strips, cool white with slight warm tint, random subtle flicker)
+- The orange tunnel lights passing by should cast moving light through the windows onto the interior walls and floor (use moving point lights or animated light positions)
+- Add very subtle dust particles floating in the air inside the car (use drei's Sparkles or a custom particle system with very small, slow-moving, dim white particles)
+- Increase the fog density outside the windows so the tunnel feels deep and endless
+
+OUTSIDE THE WINDOWS:
+- Tunnel walls should have more detail: concrete texture, occasional pipes/conduits, drainage channels
+- The tunnel lights should be brighter and cast more visible orange glow
+- Add occasional dark support columns/pillars flying past between the tunnel lights
+- The sense of speed should be more dramatic — tunnel elements moving faster
+
+POST-PROCESSING:
+- Increase bloom intensity on the tunnel lights and interior fluorescents
+- Add more film grain for grit
+- Vignette should be heavier (darker edges)
+- Add subtle chromatic aberration especially at screen edges
+- Depth of field: blur the far end of the car slightly
+
+Remove the static HTML overlay with my name/links — that info is now integrated INTO the scene via the LED ticker and poster. Keep only the nav bar at top and the scroll indicator at bottom.
+
+Commit after each major change. I want granular commits.

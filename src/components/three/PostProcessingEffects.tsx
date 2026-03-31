@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import {
   EffectComposer,
+  DepthOfField,
   Bloom,
   Vignette,
   Noise,
@@ -52,7 +53,12 @@ export default function PostProcessingEffects({
         to the camera near/far range. Low values keep focus very close,
         pushing the distant tunnel into a soft bokeh.
       */}
-      {/* DOF disabled — too expensive, kills framerate */}
+      <DepthOfField
+        focusDistance={0.02}
+        focalLength={0.014}
+        bokehScale={0.9}
+        height={360}
+      />
 
       {/*
         Bloom — makes any pixel above the luminance threshold bleed light

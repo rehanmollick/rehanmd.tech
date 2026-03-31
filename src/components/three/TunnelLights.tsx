@@ -18,14 +18,8 @@ import * as THREE from "three";
 
 // --- Constants ---
 
-/** Number of light panels in the recycling pool */
-const LIGHT_COUNT = 10;
-
 /** Distance between consecutive light panels along Z */
-const LIGHT_SPACING = 20;
-
-/** Total span of the light pool before wrapping */
-const POOL_LENGTH = LIGHT_COUNT * LIGHT_SPACING;
+const LIGHT_SPACING = 22;
 
 /** Light panel dimensions (width x height) */
 const LIGHT_WIDTH = 0.4;
@@ -36,7 +30,7 @@ const LIGHT_HEIGHT = 2.5;
  * The train right wall is at x ~= 2.15 (CAR_WIDTH/2 + WALL_THICKNESS).
  * Tunnel lights sit further out so they are visible through the windows.
  */
-const LIGHT_X = 5.5;
+const LIGHT_X = 2.9;
 
 /**
  * Y position: roughly at window height so the lights
@@ -50,7 +44,7 @@ const LIGHT_Y = 1.8;
  * We use delta-time scaling so the speed is frame-rate independent.
  * Base speed: ~0.6 units/frame at 60fps = ~36 units/second.
  */
-const SCROLL_SPEED = 36;
+const SCROLL_SPEED = 18;
 
 // --- Pre-allocated objects (created once, reused every frame) ---
 
@@ -63,11 +57,23 @@ export interface TunnelLightsProps {
   position?: [number, number, number];
   /** Scroll speed multiplier (default 1.0) */
   speedMultiplier?: number;
+  /** Which side of the train the light panels are on */
+  side?: "left" | "right";
+  /** Brightness multiplier for one side */
+  intensityMultiplier?: number;
+  /** Number of active passing lights */
+  count?: number;
+  /** Local Z center for the passing lights */
+  zOffset?: number;
 }
 
 export default function TunnelLights({
   position = [0, 0, 0],
   speedMultiplier = 1.0,
+  side = "right",
+  intensityMultiplier = 1.0,
+  count = 6,
+  zOffset = 0,
 }: TunnelLightsProps) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
 
@@ -78,14 +84,14 @@ export default function TunnelLights({
   // Track each light's current Z offset. We store a simple number array
   // rather than Vector3s since only Z changes per frame.
   const offsets = useMemo(() => {
-    const arr = new Float32Array(LIGHT_COUNT);
-    for (let i = 0; i < LIGHT_COUNT; i++) {
-      // Spread lights evenly along negative Z (ahead of camera)
-      // so they start distributed in front of the train.
-      arr[i] = -i * LIGHT_SPACING;
+    const arr = new Float32Array(count);
+    const span = (count - 1) * LIGHT_SPACING;
+    const start = -span / 2;
+    for (let i = 0; i < count; i++) {
+      arr[i] = start + i * LIGHT_SPACING;
     }
     return arr;
-  }, []);
+  }, [count]);
 
   // Geometry: a simple plane for each light panel
   const geometry = useMemo(
@@ -103,9 +109,9 @@ export default function TunnelLights({
       side: THREE.DoubleSide,
     });
     // Boost color beyond 1.0 for stronger bloom pickup
-    mat.color.multiplyScalar(3);
+    mat.color.multiplyScalar(3 * intensityMultiplier);
     return mat;
-  }, []);
+  }, [intensityMultiplier]);
 
   // Set initial instance matrices on first render.
   // useFrame will update them every frame, but we need valid matrices
@@ -126,29 +132,22 @@ export default function TunnelLights({
     const dt = Math.min(delta, 0.1);
     const frameSpeed = SCROLL_SPEED * speedMultiplier * dt;
 
-    // The camera is roughly at Z = 0 (seated in the train).
-    // Lights that scroll past Z > POOL_LENGTH / 2 (behind the camera)
-    // get recycled back to the front of the pool.
-    const wrapBehind = POOL_LENGTH / 2;
-    const wrapFront = -POOL_LENGTH / 2;
+    const span = count * LIGHT_SPACING;
+    const wrapBehind = span / 2;
+    const wrapFront = -span / 2;
 
-    for (let i = 0; i < LIGHT_COUNT; i++) {
+    for (let i = 0; i < count; i++) {
       // Move this light toward positive Z (toward and past the camera)
       offsets[i] += frameSpeed;
 
-      // Wrap: if the light has passed well behind the camera, send
-      // it back to the front of the pool.
       if (offsets[i] > wrapBehind) {
-        offsets[i] -= POOL_LENGTH;
+        offsets[i] = wrapFront;
       }
 
-      // Set the dummy's transform and push it into the instanced buffer
-      dummy.position.set(LIGHT_X, LIGHT_Y, offsets[i]);
+      const sideX = side === "right" ? LIGHT_X : -LIGHT_X;
+      dummy.position.set(sideX, LIGHT_Y, offsets[i] + zOffset);
 
-      // Rotate the plane to face the train (toward negative X).
-      // PlaneGeometry faces +Z by default; rotate -90 deg around Y
-      // so it faces -X (toward the train interior).
-      dummy.rotation.set(0, -Math.PI / 2, 0);
+      dummy.rotation.set(0, side === "right" ? -Math.PI / 2 : Math.PI / 2, 0);
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
     }
@@ -161,8 +160,8 @@ export default function TunnelLights({
     <group position={position}>
       <instancedMesh
         ref={meshRef}
-        args={[geometry, material, LIGHT_COUNT]}
-        frustumCulled={false} // Always render; they wrap around the camera
+        args={[geometry, material, count]}
+        frustumCulled={false}
       />
     </group>
   );

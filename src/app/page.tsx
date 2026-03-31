@@ -12,8 +12,8 @@ export default function Home() {
 
         {/* Scroll hint only — name/links are now in-scene (LED ticker + poster) */}
         <div className="hero-overlay pointer-events-none">
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-            <div className="font-mono text-xs text-text-muted tracking-widest uppercase animate-pulse">
+          <div className="absolute bottom-14 left-1/2 -translate-x-1/2">
+            <div className="font-mono text-sm text-text-muted tracking-widest uppercase animate-pulse">
               Scroll
             </div>
           </div>
