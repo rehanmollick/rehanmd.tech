@@ -1,8 +1,17 @@
 import Nav from "@/components/layout/Nav";
 import HeroScene from "@/components/three/HeroScene";
 import AboutSection from "@/components/sections/AboutSection";
+import BlogWallSection from "@/components/blog/BlogWallSection";
+import { getAllPosts } from "@/lib/mdx";
 
 export default function Home() {
+  const posts = getAllPosts().map((p) => ({
+    title: p.title,
+    date: p.date,
+    excerpt: p.excerpt,
+    slug: p.slug,
+  }));
+
   return (
     <>
       <Nav />
@@ -27,21 +36,8 @@ export default function Home() {
           aria-hidden="true"
         />
 
-        {/* Blog Section — fully opaque, train hidden */}
-        <section
-          id="blog"
-          className="min-h-screen px-6 py-24"
-          style={{ backgroundColor: "#0a0a0a" }}
-        >
-          <div className="max-w-6xl mx-auto">
-            <h2 className="font-mono text-2xl font-bold text-accent mb-12">
-              Blog
-            </h2>
-            <p className="text-text-muted font-mono text-sm">
-              Metro station wall scene coming soon.
-            </p>
-          </div>
-        </section>
+        {/* Blog Section — 3D metro station wall with poster for each post */}
+        <BlogWallSection posts={posts} />
 
         {/* Projects Section — fully opaque */}
         <section
