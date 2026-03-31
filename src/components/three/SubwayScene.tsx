@@ -1,8 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { PerspectiveCamera } from "@react-three/drei";
+import { useRef, useEffect } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import TrainInterior from "./TrainInterior";
 import TunnelEnvironment from "./TunnelEnvironment";
@@ -42,18 +41,23 @@ function TunnelLightSpill() {
   );
 }
 
+/** Imperatively set camera position + lookAt so nothing can override it */
+function SetupCamera() {
+  const { camera } = useThree();
+  useEffect(() => {
+    camera.position.set(-1.2, 1.2, 0);
+    // Look at the right-side windows, slightly down the car
+    camera.lookAt(2.5, 1.0, -2);
+    camera.updateProjectionMatrix();
+  }, [camera]);
+  return null;
+}
+
 function Scene() {
   return (
     <>
-      {/* Camera: seated on LEFT side, looking out across to right-side windows */}
-      <PerspectiveCamera
-        makeDefault
-        position={[-1.3, 1.1, 0.5]}
-        rotation={[-0.05, Math.PI * 0.35, 0]}
-        fov={70}
-        near={0.1}
-        far={200}
-      />
+      {/* Camera: seated on LEFT side, looking out the right-side windows */}
+      <SetupCamera />
 
       {/* Lighting — warm interior glow */}
       <ambientLight intensity={0.3} color="#ffffff" />
@@ -103,8 +107,8 @@ function Scene() {
       {/* Post-processing */}
       <PostProcessingEffects />
 
-      {/* Camera shake for train rumble */}
-      <CameraEffects />
+      {/* Camera shake disabled — was overriding camera orientation */}
+      {/* <CameraEffects /> */}
     </>
   );
 }
