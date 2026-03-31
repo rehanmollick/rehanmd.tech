@@ -102,7 +102,7 @@ function Scene() {
       {/* Train interior geometry */}
       <TrainInterior />
 
-      {/* In-scene info elements — re-enabling one by one */}
+      {/* In-scene info elements */}
       <LEDTicker />
       <PosterFrame />
 
