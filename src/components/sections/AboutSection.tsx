@@ -14,7 +14,7 @@ export default function AboutSection() {
       </div>
 
       {/* Scroll hint — far below the card */}
-      <div className="mt-64">
+      <div style={{ marginTop: "300px" }}>
         <div className="font-mono text-sm text-text-muted tracking-widest uppercase animate-pulse">
           Scroll
         </div>
