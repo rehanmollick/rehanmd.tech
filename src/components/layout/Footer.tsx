@@ -7,7 +7,7 @@ export default function Footer() {
     <footer
       id="contact"
       className="px-6 py-24"
-      style={{ backgroundColor: "#0a0a0a" }}
+      style={{ backgroundColor: "#0a0a0a", width: "100vw", maxWidth: "100vw" }}
     >
       <div className="mx-auto" style={{ maxWidth: "48rem", textAlign: "center" }}>
         <motion.div
