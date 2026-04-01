@@ -39,7 +39,7 @@ export default function Home() {
 
         {/* Fade-to-black gradient — train scene vanishes here */}
         <div
-          className="h-[40vh]"
+          className="h-[40vh] pointer-events-none"
           style={{
             background: "linear-gradient(to bottom, transparent, #0a0a0a)",
           }}
