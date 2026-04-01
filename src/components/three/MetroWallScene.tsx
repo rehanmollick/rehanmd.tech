@@ -167,8 +167,8 @@ function PosterRow({ posts }: { posts: BlogPosterData[] }) {
     const seeds = [0.3, 0.7, 0.1, 0.9, 0.5, 0.2, 0.8, 0.4];
     const maxPosters = Math.min(posts.length, 8);
     const spacing = 1.1;
-    // Shift everything left so there's room to grow rightward
-    const startX = -3.5;
+    // Start slightly left of center so there's room to grow rightward
+    const startX = -1.5;
 
     return posts.slice(0, maxPosters).map((_, i) => {
       const seed = seeds[i % seeds.length];
