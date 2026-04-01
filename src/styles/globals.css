@@ -145,26 +145,109 @@ body {
   }
 }
 
-/* About card — pixel-art / retro-game style */
+/* About card — pixel-art / retro RPG dialog box */
 .about-card {
-  background: rgba(10, 10, 10, 0.88);
-  border: 2px solid var(--accent);
-  /* Pixelated stepped border via stacked box-shadows */
+  background: rgba(8, 8, 12, 0.92);
+  position: relative;
+  /* Triple pixel border — like a retro game UI */
+  border: 4px solid var(--accent);
+  outline: 4px solid var(--accent-dim);
+  outline-offset: 4px;
+  /* Outer glow */
   box-shadow:
-    /* Outer pixel steps */
-    4px 0 0 0 var(--accent-dim),
-    -4px 0 0 0 var(--accent-dim),
-    0 4px 0 0 var(--accent-dim),
-    0 -4px 0 0 var(--accent-dim),
-    /* Corner pixels */
-    4px 4px 0 0 var(--bg-primary),
-    -4px 4px 0 0 var(--bg-primary),
-    4px -4px 0 0 var(--bg-primary),
-    -4px -4px 0 0 var(--bg-primary),
-    /* Glow */
-    0 0 30px rgba(191, 87, 0, 0.15),
-    0 0 60px rgba(191, 87, 0, 0.05);
+    inset 0 0 40px rgba(191, 87, 0, 0.06),
+    0 0 40px rgba(191, 87, 0, 0.12),
+    0 0 80px rgba(191, 87, 0, 0.06);
   image-rendering: pixelated;
+}
+
+/* Pixel corner decorations — 8-bit style notches */
+.pixel-corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  z-index: 2;
+}
+.pixel-corner::before,
+.pixel-corner::after {
+  content: "";
+  position: absolute;
+  background: var(--accent-glow);
+}
+.pixel-corner-tl {
+  top: -8px;
+  left: -8px;
+}
+.pixel-corner-tl::before {
+  width: 12px;
+  height: 4px;
+  top: 0;
+  left: 0;
+}
+.pixel-corner-tl::after {
+  width: 4px;
+  height: 12px;
+  top: 0;
+  left: 0;
+}
+.pixel-corner-tr {
+  top: -8px;
+  right: -8px;
+}
+.pixel-corner-tr::before {
+  width: 12px;
+  height: 4px;
+  top: 0;
+  right: 0;
+}
+.pixel-corner-tr::after {
+  width: 4px;
+  height: 12px;
+  top: 0;
+  right: 0;
+}
+.pixel-corner-bl {
+  bottom: -8px;
+  left: -8px;
+}
+.pixel-corner-bl::before {
+  width: 12px;
+  height: 4px;
+  bottom: 0;
+  left: 0;
+}
+.pixel-corner-bl::after {
+  width: 4px;
+  height: 12px;
+  bottom: 0;
+  left: 0;
+}
+.pixel-corner-br {
+  bottom: -8px;
+  right: -8px;
+}
+.pixel-corner-br::before {
+  width: 12px;
+  height: 4px;
+  bottom: 0;
+  right: 0;
+}
+.pixel-corner-br::after {
+  width: 4px;
+  height: 12px;
+  bottom: 0;
+  right: 0;
+}
+
+/* CRT scanline overlay */
+.scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
 }
 
 /* Code blocks in blog posts */
