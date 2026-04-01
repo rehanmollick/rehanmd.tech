@@ -31,7 +31,7 @@ function createTickerTexture(): THREE.CanvasTexture {
   ctx.shadowColor = "rgba(191, 87, 0, 0.22)";
   ctx.shadowBlur = 3;
 
-  const text = "    Your Destination: Awaits...  •  Time Until Destination: Unknown...  •  Enjoy Your Journey    ";
+  const text = "    NEXT STOP: Opportunity  •  STATUS: Building...  •  ALERT: Ship fast, break nothing  •  SYS: All systems nominal  •  DEST: The future — ETA: Unknown  •  MSG: The best way to predict the future is to build it  •  FREQ: 127.0.0.1  •  NOTICE: Mind the gap between ideas and execution    ";
   const full = text.repeat(8);
   ctx.fillText(full, 12, canvas.height / 2 + 0.5);
 

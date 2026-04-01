@@ -47,7 +47,8 @@ function BlogPostOverlay({
 
       {/* Card */}
       <div
-        className="relative z-10 border border-accent/30 bg-bg-secondary/95 backdrop-blur-md rounded-lg px-8 py-7 max-w-lg w-full mx-4 shadow-2xl"
+        className="relative z-10 border border-accent/30 bg-bg-secondary/95 backdrop-blur-md rounded-lg max-w-lg w-full mx-4 shadow-2xl"
+        style={{ padding: "32px 36px" }}
         onClick={(e) => e.stopPropagation()}
       >
         <button

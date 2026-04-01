@@ -289,7 +289,7 @@ function StationRow({
 export default function MetroMap() {
   return (
     <section id="projects" style={{ backgroundColor: "#0a0a0a" }} className="px-4 md:px-6 py-24 overflow-hidden">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Section heading */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -310,20 +310,20 @@ export default function MetroMap() {
         <div className="hidden md:block">
           {/* Terminal top: "Next Stop: TBD" */}
           <div className="flex justify-center mb-4">
-            <div style={{ paddingLeft: `${stationConfigs[0].xOffset}px` }}>
+            <div style={{ marginLeft: `${stationConfigs[0].xOffset * 2}px` }}>
               <TerminalNode label="Next Stop: TBD" sublabel="The journey continues" type="future" />
             </div>
           </div>
 
           {/* Initial vertical line from terminal to first station */}
-          <div className="flex justify-center" style={{ height: 60 }}>
+          <div className="relative" style={{ height: 60 }}>
             <div
-              className="rounded-full"
+              className="absolute rounded-full"
               style={{
                 width: LINE_THICKNESS,
                 height: "100%",
                 backgroundColor: "#BF5700",
-                marginLeft: `${stationConfigs[0].xOffset}px`,
+                left: `calc(50% + ${stationConfigs[0].xOffset}px - ${LINE_THICKNESS / 2}px)`,
                 boxShadow: "0 0 10px rgba(191,87,0,0.15)",
               }}
             />
@@ -345,14 +345,14 @@ export default function MetroMap() {
           })}
 
           {/* Final vertical segment to Departure */}
-          <div className="flex justify-center" style={{ height: 80 }}>
+          <div className="relative" style={{ height: 80 }}>
             <div
-              className="rounded-full"
+              className="absolute rounded-full"
               style={{
                 width: LINE_THICKNESS,
                 height: "100%",
                 backgroundColor: "#BF5700",
-                marginLeft: `${stationConfigs[stationConfigs.length - 1].xOffset}px`,
+                left: `calc(50% + ${stationConfigs[stationConfigs.length - 1].xOffset}px - ${LINE_THICKNESS / 2}px)`,
                 boxShadow: "0 0 10px rgba(191,87,0,0.15)",
               }}
             />
@@ -360,7 +360,7 @@ export default function MetroMap() {
 
           {/* Terminal bottom: "Departure" */}
           <div className="flex justify-center">
-            <div style={{ paddingLeft: `${stationConfigs[stationConfigs.length - 1].xOffset}px` }}>
+            <div style={{ marginLeft: `${stationConfigs[stationConfigs.length - 1].xOffset * 2}px` }}>
               <TerminalNode label="Departure" sublabel="Where it all started" type="origin" />
             </div>
           </div>
