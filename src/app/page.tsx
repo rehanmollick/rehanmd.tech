@@ -24,7 +24,7 @@ export default function Home() {
       {/* Scroll content — scrolls OVER the fixed train scene.
            pointer-events-none on the wrapper so the train canvas
            receives clicks; individual sections re-enable as needed. */}
-      <div className="relative z-10 pointer-events-none">
+      <div className="relative z-10 pointer-events-none overflow-x-hidden">
         {/* Transparent spacer — user sees full train scene through this */}
         <div className="h-screen relative">
           {/* Scroll hint */}
