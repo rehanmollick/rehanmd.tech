@@ -29,8 +29,8 @@ export default function AboutCard() {
       {/* Scanline CRT overlay */}
       <div className="pointer-events-none absolute inset-0 scanlines" />
 
-      {/* Inner content — very generous padding so text never touches border */}
-      <div className="px-12 py-14 md:px-20 md:py-18 lg:px-24 lg:py-20">
+      {/* Inner content — massive padding so text never touches border */}
+      <div className="p-16 md:p-20 lg:p-24">
         {/* Terminal-style header — pixel font */}
         <div
           className="text-accent text-[10px] md:text-xs mb-3 tracking-wide flex items-center gap-2"

@@ -6,11 +6,18 @@ export default function AboutSection() {
   return (
     <section
       id="about"
-      className="min-h-screen flex items-center justify-center px-4 py-24 pointer-events-none"
+      className="min-h-screen flex flex-col items-center justify-center px-4 py-24 pointer-events-none"
     >
       {/* Card itself captures pointer events; transparent area passes through to train */}
       <div className="pointer-events-auto">
         <AboutCard />
+      </div>
+
+      {/* Scroll hint below the card */}
+      <div className="mt-16">
+        <div className="font-mono text-sm text-text-muted tracking-widest uppercase animate-pulse">
+          Scroll
+        </div>
       </div>
     </section>
   );
