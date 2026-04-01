@@ -21,11 +21,12 @@ export default function Home() {
       {/* Fixed 3D train scene — always behind everything */}
       <HeroScene />
 
-      {/* Scroll content — scrolls OVER the fixed train scene */}
-      <div className="relative z-10">
+      {/* Scroll content — scrolls OVER the fixed train scene.
+           pointer-events-none on the wrapper so the train canvas
+           receives clicks; individual sections re-enable as needed. */}
+      <div className="relative z-10 pointer-events-none">
         {/* Transparent spacer — user sees full train scene through this */}
-        {/* pointer-events-none so clicks pass through to the 3D canvas below */}
-        <div className="h-screen pointer-events-none relative" aria-hidden="true">
+        <div className="h-screen relative">
           {/* Scroll hint */}
           <div className="absolute bottom-14 left-1/2 -translate-x-1/2">
             <div className="font-mono text-sm text-text-muted tracking-widest uppercase animate-pulse">
@@ -39,21 +40,27 @@ export default function Home() {
 
         {/* Fade-to-black gradient — train scene vanishes here */}
         <div
-          className="h-[40vh] pointer-events-none"
+          className="h-[40vh]"
           style={{
             background: "linear-gradient(to bottom, transparent, #0a0a0a)",
           }}
           aria-hidden="true"
         />
 
-        {/* Blog Section — 3D metro station wall with poster for each post */}
-        <BlogWallSection posts={posts} />
+        {/* Blog Section — re-enables pointer events */}
+        <div className="pointer-events-auto">
+          <BlogWallSection posts={posts} />
+        </div>
 
-        {/* Projects Section — metro line map */}
-        <MetroMap />
+        {/* Projects Section — re-enables pointer events */}
+        <div className="pointer-events-auto">
+          <MetroMap />
+        </div>
 
-        {/* Contact Footer */}
-        <Footer />
+        {/* Contact Footer — re-enables pointer events */}
+        <div className="pointer-events-auto">
+          <Footer />
+        </div>
       </div>
     </>
   );
