@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Space_Mono, Inter, JetBrains_Mono } from "next/font/google";
+import { Space_Mono, Inter, JetBrains_Mono, Press_Start_2P } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "@/styles/globals.css";
 
@@ -19,6 +19,13 @@ const inter = Inter({
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains",
+  display: "swap",
+});
+
+const pressStart2P = Press_Start_2P({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-pixel",
   display: "swap",
 });
 
@@ -56,7 +63,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceMono.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+      className={`${spaceMono.variable} ${inter.variable} ${jetbrainsMono.variable} ${pressStart2P.variable}`}
     >
       <body className="font-sans bg-bg-primary text-text-primary">
         {children}
