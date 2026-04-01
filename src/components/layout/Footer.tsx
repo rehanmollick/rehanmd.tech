@@ -9,7 +9,7 @@ export default function Footer() {
       className="px-6 py-24"
       style={{ backgroundColor: "#0a0a0a", width: "100vw", maxWidth: "100vw" }}
     >
-      <div className="mx-auto" style={{ maxWidth: "48rem", textAlign: "center" }}>
+      <div style={{ maxWidth: "48rem", textAlign: "center", marginLeft: "auto", marginRight: "auto" }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
