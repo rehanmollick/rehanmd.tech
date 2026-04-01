@@ -5,110 +5,111 @@ import { motion, useInView } from "framer-motion";
 import ProjectCard from "./ProjectCard";
 import { projects } from "@/data/projects";
 
-// Decorative branch lines with creative station names
+/*
+ * Metro line map inspired by LA Metro / London Underground.
+ * - Thick burnt orange line that snakes with 45° turns
+ * - Hollow circle station nodes
+ * - Cards stagger left/right
+ * - Non-uniform vertical spacing
+ * - Decorative branch lines fork off at angles
+ */
+
+// Each station's layout config
+interface StationConfig {
+  xOffset: number;       // horizontal offset from center (px) — the line shifts to this position
+  spacing: number;       // vertical gap ABOVE this station (px)
+  cardSide: "left" | "right";
+}
+
+// Non-uniform layout per station — the line shifts left/right
+const stationConfigs: StationConfig[] = [
+  { xOffset: 0,   spacing: 120, cardSide: "right" },   // Karmen Playground
+  { xOffset: 0,   spacing: 200, cardSide: "left" },     // GridPulse
+  { xOffset: -40, spacing: 240, cardSide: "right" },    // FlightSense (line shifts left)
+  { xOffset: -40, spacing: 180, cardSide: "left" },     // SplitPay Escrow
+  { xOffset: 20,  spacing: 260, cardSide: "right" },    // Orbit (line shifts right)
+  { xOffset: 20,  spacing: 200, cardSide: "left" },     // Aegis Dashboard
+  { xOffset: -20, spacing: 240, cardSide: "right" },    // Mp3 Player (shifts left)
+];
+
+// Decorative branches
 const branches: {
-  afterIndex: number;
+  afterStation: number;
   direction: "left" | "right";
   stations: string[];
 }[] = [
-  { afterIndex: 0, direction: "right", stations: ["Signal Lost"] },
-  { afterIndex: 2, direction: "left", stations: ["Echo Chamber", "Dead Frequency"] },
-  { afterIndex: 3, direction: "right", stations: ["Phantom Route"] },
-  { afterIndex: 4, direction: "left", stations: ["Undervolt", "Rust Belt"] },
-  { afterIndex: 6, direction: "right", stations: ["Sidetrack"] },
+  { afterStation: 0, direction: "left", stations: ["Signal Lost"] },
+  { afterStation: 2, direction: "right", stations: ["Echo Chamber", "Dead Freq"] },
+  { afterStation: 4, direction: "left", stations: ["Phantom Route"] },
+  { afterStation: 5, direction: "right", stations: ["Undervolt", "Rust Belt"] },
 ];
 
-// Layout constants
-const NODE_LEFT = 32; // px from container left edge to the center of the line
-const LINE_WIDTH = 3;
-const NODE_SIZE = 16;
-const CONNECTOR_LENGTH = 48; // horizontal connector from node to card area
-const SEGMENT_GAP = 0; // vertical segments connect seamlessly
+const LINE_THICKNESS = 6;
+const STATION_R = 11;
 
-function StationNode({
-  label,
-  sublabel,
-  type = "project",
-}: {
-  label: string;
-  sublabel?: string;
-  type?: "origin" | "project" | "terminal";
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-60px" });
-
+function StationDot({ isInView }: { isInView: boolean }) {
   return (
-    <div ref={ref} className="flex items-center gap-3 relative z-10">
-      <div className="relative flex-shrink-0 flex items-center justify-center">
-        {type === "origin" && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={isInView ? { scale: 1 } : { scale: 0 }}
-            transition={{ duration: 0.4 }}
-            className="w-5 h-5 rounded-full bg-accent border-2 border-white shadow-[0_0_12px_rgba(191,87,0,0.5)]"
-          />
-        )}
-        {type === "project" && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={isInView ? { scale: 1 } : { scale: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="w-4 h-4 rounded-sm bg-accent border-2 border-white shadow-[0_0_10px_rgba(191,87,0,0.4)]"
-          />
-        )}
-        {type === "terminal" && (
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={isInView ? { scale: 1 } : { scale: 0 }}
-            transition={{ duration: 0.4 }}
-            className="w-6 h-6 rounded-full border-[3px] border-accent bg-transparent shadow-[0_0_12px_rgba(191,87,0,0.3)] flex items-center justify-center"
-          >
-            <div className="w-2 h-2 rounded-full bg-accent" />
-          </motion.div>
-        )}
-      </div>
-      <div>
-        <span className="font-mono text-sm text-text-primary font-bold">{label}</span>
-        {sublabel && (
-          <span className="block font-mono text-xs text-text-muted">{sublabel}</span>
-        )}
-      </div>
-    </div>
+    <motion.div
+      initial={{ scale: 0 }}
+      animate={isInView ? { scale: 1 } : {}}
+      transition={{ duration: 0.4 }}
+      className="relative flex-shrink-0"
+      style={{ width: STATION_R * 2 + 8, height: STATION_R * 2 + 8 }}
+    >
+      {/* Glow ring */}
+      <div
+        className="absolute inset-0 rounded-full"
+        style={{
+          border: "1px solid rgba(191,87,0,0.2)",
+        }}
+      />
+      {/* Thick hollow circle */}
+      <div
+        className="absolute rounded-full"
+        style={{
+          top: 4,
+          left: 4,
+          width: STATION_R * 2,
+          height: STATION_R * 2,
+          border: `4px solid #BF5700`,
+          backgroundColor: "#0a0a0a",
+        }}
+      />
+      {/* Center dot */}
+      <div
+        className="absolute rounded-full bg-accent"
+        style={{
+          top: STATION_R + 4 - 3,
+          left: STATION_R + 4 - 3,
+          width: 6,
+          height: 6,
+        }}
+      />
+    </motion.div>
   );
 }
 
-function BranchLine({
+function BranchDecoration({
+  direction,
   stations,
 }: {
   direction: "left" | "right";
   stations: string[];
 }) {
+  const dir = direction === "right" ? 1 : -1;
   return (
-    <div className="relative py-4" style={{ marginLeft: NODE_LEFT - 1 }}>
-      {/* Diagonal SVG connector from main line */}
-      <svg
-        width="120"
-        height="32"
-        className="absolute -left-[1px] -top-1"
-        style={{ overflow: "visible" }}
-      >
-        <path
-          d={`M 0,0 L 40,28`}
-          stroke="#BF5700"
-          strokeWidth="2"
-          strokeOpacity="0.3"
-          fill="none"
-        />
+    <div className={`flex items-center gap-1 my-2 ${direction === "right" ? "" : "flex-row-reverse"}`}>
+      {/* 45° stub */}
+      <svg width="40" height="28" className="flex-shrink-0" style={{ transform: direction === "left" ? "scaleX(-1)" : undefined }}>
+        <line x1="0" y1="0" x2="35" y2="25" stroke="#BF5700" strokeWidth="2.5" strokeOpacity="0.25" strokeLinecap="round" />
       </svg>
-      {/* Branch stations */}
-      <div className="flex items-center gap-2 ml-10 mt-4">
+      {/* Horizontal line + station dots */}
+      <div className={`flex items-center gap-2 ${direction === "left" ? "flex-row-reverse" : ""}`}>
         {stations.map((name, i) => (
-          <div key={name} className="flex items-center gap-2">
-            {i > 0 && <div className="w-8 h-[2px] bg-accent/25" />}
-            <div className="w-2.5 h-2.5 rounded-full border border-accent/35 bg-transparent flex-shrink-0" />
-            <span className="font-mono text-[10px] text-text-muted/50 whitespace-nowrap italic">
-              {name}
-            </span>
+          <div key={name} className={`flex items-center gap-1.5 ${direction === "left" ? "flex-row-reverse" : ""}`}>
+            {i > 0 && <div className="w-6 h-[2.5px] bg-accent/20 rounded-full" />}
+            <div className="w-[9px] h-[9px] rounded-full border-2 border-accent/30 bg-bg-primary flex-shrink-0" />
+            <span className="font-mono text-[9px] text-text-muted/40 whitespace-nowrap italic">{name}</span>
           </div>
         ))}
       </div>
@@ -116,17 +117,186 @@ function BranchLine({
   );
 }
 
+function TerminalNode({ label, sublabel, type }: { label: string; sublabel: string; type: "future" | "origin" }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="relative flex-shrink-0" style={{ width: 30, height: 30 }}>
+        {type === "origin" ? (
+          <>
+            <div className="absolute inset-0 rounded-full bg-accent" />
+            <div className="absolute inset-[6px] rounded-full bg-bg-primary" />
+            <div className="absolute inset-[10px] rounded-full bg-accent" />
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0 rounded-full border-4 border-accent bg-bg-primary" />
+            <div className="absolute inset-[9px] rounded-full bg-accent animate-pulse" />
+          </>
+        )}
+      </div>
+      <div>
+        <span className="font-mono text-xs text-accent font-bold">{label}</span>
+        <span className="block font-mono text-[10px] text-text-muted">{sublabel}</span>
+      </div>
+    </div>
+  );
+}
+
+function StationRow({
+  project,
+  config,
+  index,
+  prevXOffset,
+}: {
+  project: (typeof projects)[number];
+  config: StationConfig;
+  index: number;
+  prevXOffset: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-60px" });
+  const isRight = config.cardSide === "right";
+  const needsTurn = config.xOffset !== prevXOffset;
+
+  return (
+    <div ref={ref} style={{ paddingTop: config.spacing }}>
+      {/* Vertical line segment + optional 45° turn */}
+      <div className="relative flex justify-center" style={{ height: config.spacing, marginTop: -config.spacing }}>
+        {needsTurn ? (
+          <svg
+            className="absolute top-0 h-full"
+            style={{ width: 200, left: "50%", transform: "translateX(-50%)" }}
+            preserveAspectRatio="none"
+          >
+            {/* Glow */}
+            <line
+              x1={100 + prevXOffset}
+              y1="0"
+              x2={100 + prevXOffset}
+              y2={`${Math.max(30, config.spacing * 0.4)}`}
+              stroke="#BF5700"
+              strokeWidth={LINE_THICKNESS + 6}
+              opacity="0.08"
+              strokeLinecap="round"
+            />
+            {/* Vertical down from previous position */}
+            <line
+              x1={100 + prevXOffset}
+              y1="0"
+              x2={100 + prevXOffset}
+              y2={`${Math.max(30, config.spacing * 0.4)}`}
+              stroke="#BF5700"
+              strokeWidth={LINE_THICKNESS}
+              strokeLinecap="round"
+            />
+            {/* 45° diagonal turn */}
+            <line
+              x1={100 + prevXOffset}
+              y1={`${Math.max(30, config.spacing * 0.4)}`}
+              x2={100 + config.xOffset}
+              y2={`${Math.max(30, config.spacing * 0.4) + Math.abs(config.xOffset - prevXOffset)}`}
+              stroke="#BF5700"
+              strokeWidth={LINE_THICKNESS}
+              strokeLinecap="round"
+            />
+            {/* Vertical down to station */}
+            <line
+              x1={100 + config.xOffset}
+              y1={`${Math.max(30, config.spacing * 0.4) + Math.abs(config.xOffset - prevXOffset)}`}
+              x2={100 + config.xOffset}
+              y2="100%"
+              stroke="#BF5700"
+              strokeWidth={LINE_THICKNESS}
+              strokeLinecap="round"
+            />
+          </svg>
+        ) : (
+          <div
+            className="absolute top-0 bottom-0 rounded-full"
+            style={{
+              width: LINE_THICKNESS,
+              backgroundColor: "#BF5700",
+              left: `calc(50% + ${config.xOffset}px - ${LINE_THICKNESS / 2}px)`,
+              boxShadow: "0 0 10px rgba(191,87,0,0.15)",
+            }}
+          />
+        )}
+      </div>
+
+      {/* Station node row */}
+      <div
+        className="flex items-start gap-6 relative"
+        style={{
+          justifyContent: isRight ? "flex-start" : "flex-end",
+          paddingLeft: isRight ? `calc(50% + ${config.xOffset}px - 15px)` : undefined,
+          paddingRight: !isRight ? `calc(50% - ${config.xOffset}px - 15px)` : undefined,
+        }}
+      >
+        {/* Card on left side */}
+        {!isRight && (
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="flex-1 max-w-xl"
+          >
+            <ProjectCard project={project} />
+          </motion.div>
+        )}
+
+        {/* Station dot + label */}
+        <div className="flex flex-col items-center flex-shrink-0" style={{ width: 30 }}>
+          <StationDot isInView={isInView} />
+          {/* Station name label (small, below the dot) */}
+          <div className={`mt-1 font-mono text-[9px] text-text-muted whitespace-nowrap ${isRight ? "text-left" : "text-right"}`}>
+            {project.dateDisplay}
+          </div>
+        </div>
+
+        {/* Card on right side */}
+        {isRight && (
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+            className="flex-1 max-w-xl"
+          >
+            <ProjectCard project={project} />
+          </motion.div>
+        )}
+      </div>
+
+      {/* Decorative branches after this station */}
+      {branches
+        .filter((b) => b.afterStation === index)
+        .map((b, i) => (
+          <div
+            key={`branch-${index}-${i}`}
+            style={{
+              paddingLeft: b.direction === "right" ? `calc(50% + ${config.xOffset}px + 10px)` : undefined,
+              paddingRight: b.direction === "left" ? `calc(50% - ${config.xOffset}px + 10px)` : undefined,
+              display: "flex",
+              justifyContent: b.direction === "right" ? "flex-start" : "flex-end",
+            }}
+          >
+            <BranchDecoration direction={b.direction} stations={b.stations} />
+          </div>
+        ))}
+    </div>
+  );
+}
+
 export default function MetroMap() {
   return (
-    <section id="projects" style={{ backgroundColor: "#0a0a0a" }} className="px-4 md:px-6 py-24">
-      <div className="max-w-5xl mx-auto">
+    <section id="projects" style={{ backgroundColor: "#0a0a0a" }} className="px-4 md:px-6 py-24 overflow-hidden">
+      <div className="max-w-6xl mx-auto">
         {/* Section heading */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mb-16"
+          className="mb-16 text-center"
         >
           <h2 className="font-mono text-2xl font-bold text-accent tracking-wider">
             The Line
@@ -136,93 +306,92 @@ export default function MetroMap() {
           </p>
         </motion.div>
 
-        {/* Metro map layout */}
-        <div className="relative">
-          {/* Main vertical line — runs the full height, positioned at NODE_LEFT */}
-          <div
-            className="absolute top-0 bottom-0"
-            style={{
-              left: NODE_LEFT,
-              width: LINE_WIDTH,
-              background: "linear-gradient(to bottom, rgba(191,87,0,0.3), #BF5700 5%, #BF5700 95%, rgba(191,87,0,0.3))",
-              boxShadow: "0 0 8px rgba(191,87,0,0.3), 0 0 16px rgba(191,87,0,0.15)",
-              borderRadius: 2,
-            }}
-          />
+        {/* Desktop metro map */}
+        <div className="hidden md:block">
+          {/* Terminal top: "Next Stop: TBD" */}
+          <div className="flex justify-center mb-4">
+            <div style={{ paddingLeft: `${stationConfigs[0].xOffset}px` }}>
+              <TerminalNode label="Next Stop: TBD" sublabel="The journey continues" type="future" />
+            </div>
+          </div>
 
-          {/* Terminal node (top) — future, since projects are newest-first */}
-          <div className="relative pb-10" style={{ paddingLeft: NODE_LEFT - 10 }}>
-            <StationNode
-              label="Next Stop: TBD"
-              sublabel="The journey continues"
-              type="terminal"
+          {/* Initial vertical line from terminal to first station */}
+          <div className="flex justify-center" style={{ height: 60 }}>
+            <div
+              className="rounded-full"
+              style={{
+                width: LINE_THICKNESS,
+                height: "100%",
+                backgroundColor: "#BF5700",
+                marginLeft: `${stationConfigs[0].xOffset}px`,
+                boxShadow: "0 0 10px rgba(191,87,0,0.15)",
+              }}
             />
           </div>
 
-          {/* Project stations */}
-          {projects.map((project, index) => (
-            <div key={project.id} className="relative">
-              {/* Station row */}
-              <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-0 relative">
-                {/* Node + label column */}
-                <div
-                  className="flex-shrink-0 relative z-10"
-                  style={{ paddingLeft: NODE_LEFT - 8, width: "auto" }}
-                >
-                  <StationNode
-                    label={project.title}
-                    sublabel={project.dateDisplay}
-                    type="project"
-                  />
-                </div>
+          {/* Station rows */}
+          {projects.map((project, i) => {
+            const config = stationConfigs[i];
+            const prevOffset = i === 0 ? stationConfigs[0].xOffset : stationConfigs[i - 1].xOffset;
+            return (
+              <StationRow
+                key={project.id}
+                project={project}
+                config={config}
+                index={i}
+                prevXOffset={prevOffset}
+              />
+            );
+          })}
 
-                {/* Horizontal connector line (desktop) */}
-                <div className="hidden md:block flex-shrink-0 relative" style={{ width: CONNECTOR_LENGTH }}>
-                  <svg
-                    width={CONNECTOR_LENGTH}
-                    height="4"
-                    className="absolute top-[11px] left-0"
-                  >
-                    <line
-                      x1="0"
-                      y1="2"
-                      x2={CONNECTOR_LENGTH}
-                      y2="2"
-                      stroke="#BF5700"
-                      strokeWidth="2"
-                      strokeOpacity="0.4"
-                    />
-                    {/* Dot at the end */}
-                    <circle cx={CONNECTOR_LENGTH - 2} cy="2" r="2" fill="#BF5700" opacity="0.5" />
-                  </svg>
-                </div>
+          {/* Final vertical segment to Departure */}
+          <div className="flex justify-center" style={{ height: 80 }}>
+            <div
+              className="rounded-full"
+              style={{
+                width: LINE_THICKNESS,
+                height: "100%",
+                backgroundColor: "#BF5700",
+                marginLeft: `${stationConfigs[stationConfigs.length - 1].xOffset}px`,
+                boxShadow: "0 0 10px rgba(191,87,0,0.15)",
+              }}
+            />
+          </div>
 
-                {/* Project card */}
-                <div className="flex-1 md:max-w-2xl ml-12 md:ml-0 pb-8">
-                  <ProjectCard project={project} />
-                </div>
+          {/* Terminal bottom: "Departure" */}
+          <div className="flex justify-center">
+            <div style={{ paddingLeft: `${stationConfigs[stationConfigs.length - 1].xOffset}px` }}>
+              <TerminalNode label="Departure" sublabel="Where it all started" type="origin" />
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile: simple stacked cards with thin left line */}
+        <div className="md:hidden">
+          {/* Thin vertical line */}
+          <div className="relative pl-8">
+            <div className="absolute left-3 top-0 bottom-0 w-[3px] bg-accent/60 rounded-full" />
+            <div className="space-y-10">
+              {/* TBD node */}
+              <div className="relative">
+                <div className="absolute -left-[21px] top-1 w-4 h-4 rounded-full border-[3px] border-accent bg-bg-primary" />
+                <p className="font-mono text-xs text-accent font-bold">Next Stop: TBD</p>
               </div>
 
-              {/* Decorative branches after this project */}
-              {branches
-                .filter((b) => b.afterIndex === index)
-                .map((b, i) => (
-                  <BranchLine
-                    key={`branch-${index}-${i}`}
-                    direction={b.direction}
-                    stations={b.stations}
-                  />
-                ))}
-            </div>
-          ))}
+              {projects.map((project) => (
+                <div key={project.id} className="relative">
+                  <div className="absolute -left-[19px] top-2 w-3 h-3 rounded-full border-[3px] border-accent bg-bg-primary" />
+                  <ProjectCard project={project} />
+                </div>
+              ))}
 
-          {/* Origin node (bottom) — the beginning, oldest projects above this */}
-          <div className="relative pt-6" style={{ paddingLeft: NODE_LEFT - 10 }}>
-            <StationNode
-              label="Departure"
-              sublabel="Where it all started"
-              type="origin"
-            />
+              {/* Departure node */}
+              <div className="relative">
+                <div className="absolute -left-[21px] top-1 w-4 h-4 rounded-full bg-accent" />
+                <p className="font-mono text-xs text-accent font-bold">Departure</p>
+                <p className="font-mono text-[10px] text-text-muted">Where it all started</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
