@@ -156,34 +156,47 @@ function MetroPostProcessing() {
 }
 
 /**
- * Arranges blog post posters evenly across the tile wall.
- * Supports 1-4 posters; positions are calculated to centre
- * the group on the wall.
+ * Arranges blog post posters on the wall like hand-pinned notes.
+ * Shifted to the left, smaller, with messy angles and varying heights
+ * to look like someone taped them up haphazardly. Supports up to 8.
  */
 function PosterRow({ posts }: { posts: BlogPosterData[] }) {
-  const posterPositions = useMemo(() => {
-    const count = Math.min(posts.length, 4);
-    const spacing = 2.2;
-    const totalWidth = (count - 1) * spacing;
-    const startX = -totalWidth / 2;
+  // Pre-computed "messy" layout: each poster gets a unique position, rotation, height offset
+  const layouts = useMemo(() => {
+    // Seed-based pseudo-random for consistent layout per slot
+    const seeds = [0.3, 0.7, 0.1, 0.9, 0.5, 0.2, 0.8, 0.4];
+    const maxPosters = Math.min(posts.length, 8);
+    const spacing = 1.1;
+    // Shift everything left so there's room to grow rightward
+    const startX = -3.5;
 
-    return posts.slice(0, 4).map((_, i) => {
+    return posts.slice(0, maxPosters).map((_, i) => {
+      const seed = seeds[i % seeds.length];
       const x = startX + i * spacing;
-      // Posters mounted at eye level on the wall, slightly in front
-      return [x, 2.1, 0.025] as [number, number, number];
+      // Vary height: some higher, some lower, like someone pinned them at different spots
+      const y = 2.0 + (seed - 0.5) * 0.5;
+      // Random Z rotation for "messy" tilt (-8 to +8 degrees)
+      const rotZ = (seed - 0.5) * 0.28;
+      // Slight Y rotation to angle some toward/away from viewer
+      const rotY = (seed - 0.5) * 0.06;
+      return {
+        position: [x, y, 0.025] as [number, number, number],
+        rotation: [0, rotY, rotZ] as [number, number, number],
+      };
     });
   }, [posts]);
 
   return (
     <>
-      {posts.slice(0, 4).map((post, i) => (
+      {posts.slice(0, 8).map((post, i) => (
         <WallPoster
           key={post.slug}
           title={post.title}
           date={post.date}
           excerpt={post.excerpt}
           slug={post.slug}
-          position={posterPositions[i]}
+          position={layouts[i].position}
+          rotation={layouts[i].rotation}
         />
       ))}
     </>
