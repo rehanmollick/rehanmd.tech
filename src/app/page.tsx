@@ -24,7 +24,15 @@ export default function Home() {
       {/* Scroll content — scrolls OVER the fixed train scene */}
       <div className="relative z-10">
         {/* Transparent spacer — user sees full train scene through this */}
-        <div className="h-screen" aria-hidden="true" />
+        {/* pointer-events-none so clicks pass through to the 3D canvas below */}
+        <div className="h-screen pointer-events-none relative" aria-hidden="true">
+          {/* Scroll hint */}
+          <div className="absolute bottom-14 left-1/2 -translate-x-1/2">
+            <div className="font-mono text-sm text-text-muted tracking-widest uppercase animate-pulse">
+              Scroll
+            </div>
+          </div>
+        </div>
 
         {/* About Me — transparent bg, train still visible behind the card */}
         <AboutSection />
