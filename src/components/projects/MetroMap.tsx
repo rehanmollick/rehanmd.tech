@@ -238,7 +238,7 @@ function StationRow({
             initial={{ opacity: 0, x: -50 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="flex-1 max-w-xl"
+            className="flex-1 max-w-md pr-4"
           >
             <ProjectCard project={project} />
           </motion.div>
@@ -259,7 +259,7 @@ function StationRow({
             initial={{ opacity: 0, x: 50 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="flex-1 max-w-xl"
+            className="flex-1 max-w-md pr-4"
           >
             <ProjectCard project={project} />
           </motion.div>
@@ -288,15 +288,15 @@ function StationRow({
 
 export default function MetroMap() {
   return (
-    <section id="projects" style={{ backgroundColor: "#0a0a0a" }} className="px-4 md:px-6 py-24 overflow-hidden">
-      <div className="max-w-5xl mx-auto">
+    <section id="projects" style={{ backgroundColor: "#0a0a0a" }} className="py-24 overflow-hidden">
+      <div className="w-full">
         {/* Section heading */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mb-16 text-center"
+          className="mb-16 text-center px-6"
         >
           <h2 className="font-mono text-2xl font-bold text-accent tracking-wider">
             The Line
@@ -309,8 +309,11 @@ export default function MetroMap() {
         {/* Desktop metro map */}
         <div className="hidden md:block">
           {/* Terminal top: "Next Stop: TBD" */}
-          <div className="flex justify-center mb-4">
-            <div style={{ marginLeft: `${stationConfigs[0].xOffset * 2}px` }}>
+          <div className="relative mb-4" style={{ height: 40 }}>
+            <div
+              className="absolute flex items-center gap-3"
+              style={{ left: `calc(50% + ${stationConfigs[0].xOffset}px - 15px)` }}
+            >
               <TerminalNode label="Next Stop: TBD" sublabel="The journey continues" type="future" />
             </div>
           </div>
@@ -359,8 +362,11 @@ export default function MetroMap() {
           </div>
 
           {/* Terminal bottom: "Departure" */}
-          <div className="flex justify-center">
-            <div style={{ marginLeft: `${stationConfigs[stationConfigs.length - 1].xOffset * 2}px` }}>
+          <div className="relative" style={{ height: 40 }}>
+            <div
+              className="absolute flex items-center gap-3"
+              style={{ left: `calc(50% + ${stationConfigs[stationConfigs.length - 1].xOffset}px - 15px)` }}
+            >
               <TerminalNode label="Departure" sublabel="Where it all started" type="origin" />
             </div>
           </div>
