@@ -13,8 +13,8 @@ export default function AboutSection() {
         <AboutCard />
       </div>
 
-      {/* Scroll hint below the card */}
-      <div className="mt-16">
+      {/* Scroll hint — far below the card */}
+      <div className="mt-64">
         <div className="font-mono text-sm text-text-muted tracking-widest uppercase animate-pulse">
           Scroll
         </div>

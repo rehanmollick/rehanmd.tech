@@ -30,7 +30,7 @@ export default function AboutCard() {
       <div className="pointer-events-none absolute inset-0 scanlines" />
 
       {/* Inner content — massive padding so text never touches border */}
-      <div className="p-16 md:p-20 lg:p-24">
+      <div className="p-20 md:p-28 lg:p-32">
         {/* Terminal-style header — pixel font */}
         <div
           className="text-accent text-[10px] md:text-xs mb-3 tracking-wide flex items-center gap-2"
