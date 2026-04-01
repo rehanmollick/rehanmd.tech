@@ -14,7 +14,7 @@ export default function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
+    <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 bg-bg-primary/60 backdrop-blur-md border-b border-white/5">
       <div className="mx-auto flex max-w-6xl items-center justify-between">
         {/* Logo / Name */}
         <Link
