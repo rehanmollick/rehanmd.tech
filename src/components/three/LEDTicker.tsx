@@ -31,7 +31,7 @@ function createTickerTexture(): THREE.CanvasTexture {
   ctx.shadowColor = "rgba(191, 87, 0, 0.22)";
   ctx.shadowBlur = 3;
 
-  const text = "    Your Destination: Awaits...  •  Time Until Destination: Unknown...  •  Enjoy Your Journey    ";
+  const text = "    Welcome Aboard  •  This is not your usual commute  •  How did you end up here?  •  The tunnel goes deeper than you think  •  Find the Easter Eggs    ";
   const full = text.repeat(8);
   ctx.fillText(full, 12, canvas.height / 2 + 0.5);
 
