@@ -30,7 +30,7 @@ export default function AboutCard() {
       <div className="pointer-events-none absolute inset-0 scanlines" />
 
       {/* Inner content — massive padding via inline style so it can't be purged */}
-      <div style={{ padding: "100px 80px" }}>
+      <div style={{ padding: "40px 50px" }}>
         {/* Terminal-style header — pixel font */}
         <div
           className="text-accent text-[10px] md:text-xs mb-3 tracking-wide flex items-center gap-2"
