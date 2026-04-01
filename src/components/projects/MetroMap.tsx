@@ -288,7 +288,7 @@ function StationRow({
 
 export default function MetroMap() {
   return (
-    <section id="projects" style={{ backgroundColor: "#0a0a0a" }} className="py-24 overflow-hidden">
+    <section id="projects" style={{ backgroundColor: "#0a0a0a", maxWidth: "100vw" }} className="py-24 overflow-hidden">
       <div className="w-full">
         {/* Section heading */}
         <motion.div
