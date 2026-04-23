@@ -19,7 +19,8 @@ export default function Nav() {
         {/* Logo / Name */}
         <Link
           href="/"
-          className="font-mono text-sm font-bold tracking-wider text-text-primary hover:text-accent-light transition-colors"
+          className="text-sm font-bold tracking-wider text-text-primary hover:text-accent-light transition-colors"
+          style={{ fontFamily: "var(--font-pixel), monospace" }}
         >
           rehan<span className="text-accent">md</span>.tech
         </Link>
@@ -30,7 +31,8 @@ export default function Nav() {
             <li key={link.href}>
               <Link
                 href={link.href}
-                className="font-mono text-xs tracking-widest uppercase text-text-secondary hover:text-accent-light transition-colors"
+                className="text-xs tracking-widest uppercase text-text-secondary hover:text-accent-light transition-colors"
+                style={{ fontFamily: "var(--font-pixel), monospace" }}
               >
                 {link.label}
               </Link>
@@ -78,7 +80,8 @@ export default function Nav() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="font-mono text-sm tracking-widest uppercase text-text-secondary hover:text-accent-light transition-colors"
+                  className="text-sm tracking-widest uppercase text-text-secondary hover:text-accent-light transition-colors"
+                  style={{ fontFamily: "var(--font-pixel), monospace" }}
                   onClick={() => setMobileOpen(false)}
                 >
                   {link.label}
