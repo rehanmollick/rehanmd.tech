@@ -20,24 +20,24 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="bg-bg-secondary border border-bg-tertiary rounded-xl p-5 md:p-6"
     >
-      <div className="flex flex-col md:flex-row gap-5">
+      <div className="flex flex-col md:flex-row gap-5 overflow-hidden">
         {/* Slideshow */}
         <div className="w-full md:w-[280px] flex-shrink-0">
           <Slideshow slides={project.slides} alt={project.title} />
         </div>
 
         {/* Info */}
-        <div className="flex-1 min-w-0">
-          <h3 className="font-mono text-lg font-bold text-text-primary">
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <h3 className="font-mono text-lg font-bold text-text-primary break-words">
             {project.title}
           </h3>
           <p className="font-mono text-xs text-text-muted mt-1">
-            {project.dateDisplay}
+            <span>{project.dateDisplay}</span>
             {project.context && (
               <span className="ml-2 text-accent-light">{project.context}</span>
             )}
           </p>
-          <p className="text-text-secondary text-sm mt-3 leading-relaxed">
+          <p className="text-text-secondary text-sm mt-3 leading-relaxed break-words">
             {project.description}
           </p>
 
