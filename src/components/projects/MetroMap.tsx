@@ -238,7 +238,7 @@ function StationRow({
             initial={{ opacity: 0, x: -50 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="flex-1 max-w-md pr-4"
+            className="flex-1 max-w-xl pr-4"
           >
             <ProjectCard project={project} />
           </motion.div>
@@ -259,7 +259,7 @@ function StationRow({
             initial={{ opacity: 0, x: 50 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="flex-1 max-w-md pr-4"
+            className="flex-1 max-w-xl pr-4"
           >
             <ProjectCard project={project} />
           </motion.div>
@@ -367,7 +367,7 @@ export default function MetroMap() {
               className="absolute flex items-center gap-3"
               style={{ left: `calc(50% + ${stationConfigs[stationConfigs.length - 1].xOffset}px - 15px)` }}
             >
-              <TerminalNode label="Departure" sublabel="Where it all started" type="origin" />
+              <TerminalNode label="Departure" sublabel="" type="origin" />
             </div>
           </div>
         </div>
@@ -395,7 +395,6 @@ export default function MetroMap() {
               <div className="relative">
                 <div className="absolute -left-[21px] top-1 w-4 h-4 rounded-full bg-accent" />
                 <p className="font-mono text-xs text-accent font-bold">Departure</p>
-                <p className="font-mono text-[10px] text-text-muted">Where it all started</p>
               </div>
             </div>
           </div>
