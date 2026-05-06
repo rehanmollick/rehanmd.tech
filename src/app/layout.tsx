@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Mono, Inter, JetBrains_Mono, Press_Start_2P } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import SessionProviderClient from "@/components/providers/SessionProviderClient";
 import "@/styles/globals.css";
 
 const spaceMono = Space_Mono({
@@ -66,7 +67,7 @@ export default function RootLayout({
       className={`${spaceMono.variable} ${inter.variable} ${jetbrainsMono.variable} ${pressStart2P.variable}`}
     >
       <body className="font-sans bg-bg-primary text-text-primary">
-        {children}
+        <SessionProviderClient>{children}</SessionProviderClient>
         <Analytics />
       </body>
     </html>
