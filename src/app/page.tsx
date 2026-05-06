@@ -1,19 +1,10 @@
 import Nav from "@/components/layout/Nav";
 import HeroScene from "@/components/three/HeroScene";
 import AboutSection from "@/components/sections/AboutSection";
-import BlogWallSection from "@/components/blog/BlogWallSection";
 import MetroMap from "@/components/projects/MetroMap";
 import Footer from "@/components/layout/Footer";
-import { getAllPosts } from "@/lib/mdx";
 
 export default function Home() {
-  const posts = getAllPosts().map((p) => ({
-    title: p.title,
-    date: p.date,
-    excerpt: p.excerpt,
-    slug: p.slug,
-  }));
-
   return (
     <>
       <Nav />
@@ -46,11 +37,6 @@ export default function Home() {
           }}
           aria-hidden="true"
         />
-
-        {/* Blog Section — re-enables pointer events */}
-        <div className="pointer-events-auto">
-          <BlogWallSection posts={posts} />
-        </div>
 
         {/* Projects Section — re-enables pointer events */}
         <div className="pointer-events-auto">
