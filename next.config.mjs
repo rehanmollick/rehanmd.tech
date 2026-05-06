@@ -3,12 +3,16 @@ const nextConfig = {
   // Enable React strict mode for better dev experience
   reactStrictMode: true,
 
-  // Allow images from external domains (for project screenshots if hosted externally)
+  // Allow images from external domains (for project screenshots and Vercel Blob uploads)
   images: {
     remotePatterns: [
       {
         protocol: "https",
         hostname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
       },
     ],
   },
