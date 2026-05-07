@@ -953,22 +953,249 @@ TODO(spec): for EACH admin screen open prototype/app.js + prototype/index.html a
 
 ## §D · Animations — extract literal CSS keyframes + JS handlers
 
+### D.1 Marquee scroll
+Selector: `.hero .marquee-track` (`index.html:88`).
+```css
+@keyframes marquee { to { transform: translateX(-50%); } }
+.hero .marquee-track {
+  animation: marquee 45s linear infinite;
+  display:flex; gap:80px; white-space:nowrap;
+}
 ```
-TODO(spec): for each animation, paste the literal @keyframes block and any JS easing constants from prototype:
-  D.1 Marquee scroll (selector + keyframes + duration)
-  D.2 Envelope flap unfold (transform values, duration, easing)
-  D.3 Envelope letter slide-up
-  D.4 Wax seal scale-out
-  D.5 Bulb pulse (R3F — already preserved in real app)
-  D.6 Equalizer bar heights (each bar's @keyframes)
-  D.7 Footer letter bobble
-  D.8 Terminus pin pulse on world map
-  D.9 Pacific rope dashoffset draw
-  D.10 Plaque carousel autoplay interval (read app.js for the setInterval value)
-  D.11 Newsstand wall pan inertia coefficient
-  D.12 Newspaper drop-cap reveal (if any)
-  D.13 Toast enter/exit
-  D.14 Modal scale + opacity enter/exit
+Duration **45s** (NOT 40s as `01-design-system.md` says). Track contains the full marquee string concatenated twice (`s + s`) so the `-50%` translate produces a seamless loop.
+
+### D.2 Envelope flap unfold
+**Not in prototype.** The about-trigger is a flat poster, not an envelope. Spec §04's flap animation is fictional. Drop it.
+
+### D.3 Envelope letter slide-up
+**Not in prototype.** Drop.
+
+### D.4 Wax seal scale-out
+**Not in prototype.** Drop.
+
+### D.5 Bulb pulse (the line — bulb-string DOM, NOT the R3F train scene)
+Selector: `.bulb.dim` (`index.html:424–425`).
+```css
+.bulb.dim { opacity:.35; animation: flick 4s ease-in-out infinite; }
+@keyframes flick {
+  0%, 92%, 100% { opacity: .45; }
+  94%           { opacity: .10; }
+  96%           { opacity: .50; }
+}
+```
+Plus the `.bulb` solid bulbs are static (no animation; the dim ones flicker every 4s with a tight bad-bulb pulse).
+
+The R3F train scene already has its own bulb-pulse animation (preserved from Phase 1, not replicated here).
+
+### D.6 Equalizer bar heights
+Selector: `.ap-equalizer .bar` (`index.html:713–722`).
+```css
+.ap-equalizer .bar { flex:1; background:#bf5700; animation: eq 1s ease-in-out infinite; }
+.ap-equalizer .bar:nth-child(1) { animation-delay: 0s; }
+.ap-equalizer .bar:nth-child(2) { animation-delay: .15s; }
+.ap-equalizer .bar:nth-child(3) { animation-delay: .30s; }
+.ap-equalizer .bar:nth-child(4) { animation-delay: .45s; }
+.ap-equalizer .bar:nth-child(5) { animation-delay: .60s; }
+.ap-equalizer .bar:nth-child(6) { animation-delay: .75s; }
+.ap-equalizer .bar:nth-child(7) { animation-delay: .90s; }
+@keyframes eq {
+  0%, 100% { height: 30%; }
+  50%      { height: 100%; }
+}
+```
+**7 bars** total (NOT 4 as `05-about-bulletin.md` says). Each bar is `flex:1` of a `height:20px` row. Reduced motion: freeze at `height:50%`.
+
+### D.7 Footer letter bobble
+Selector: `.footer-title span` (`index.html:1132–1148`).
+```css
+.footer-title span { display:inline-block; animation: bob 1.4s ease-in-out infinite; transform-origin: 50% 80%; }
+.footer-title span.sp { animation: none; width: .4em; }     /* spaces don't bob */
+.footer-title span:nth-child(1)  { animation-delay: 0s;    }
+.footer-title span:nth-child(2)  { animation-delay: .08s;  }
+.footer-title span:nth-child(3)  { animation-delay: .16s;  }
+.footer-title span:nth-child(4)  { animation-delay: .24s;  }
+.footer-title span:nth-child(5)  { animation-delay: .32s;  }
+/* :nth-child(6) is a space (.sp) */
+.footer-title span:nth-child(7)  { animation-delay: .48s;  }
+.footer-title span:nth-child(8)  { animation-delay: .56s;  }
+/* :nth-child(9) is a space (.sp) */
+.footer-title span:nth-child(10) { animation-delay: .72s;  }
+.footer-title span:nth-child(11) { animation-delay: .80s;  }
+.footer-title span:nth-child(12) { animation-delay: .88s;  }
+
+@keyframes bob {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    color: var(--accent-light);
+    text-shadow: 0 0 24px rgba(255,140,50,.45), 0 4px 0 #6a2a00;
+  }
+  35% {
+    transform: translateY(-18px) scale(1.06);
+    color: #ffd28a;
+    text-shadow: 0 0 30px rgba(255,200,120,.7), 0 6px 0 #6a2a00;
+  }
+  70% {
+    transform: translateY(0) scale(1);
+  }
+}
+```
+Sub-line bobble (`.q-q`):
+```css
+.q-q { display:inline-block; animation: qbob 2.6s ease-in-out infinite; }
+.q-q:nth-child(2) { animation-delay:.13s; }
+.q-q:nth-child(3) { animation-delay:.26s; }
+.q-q:nth-child(4) { animation-delay:.39s; }
+.q-q:nth-child(5) { animation-delay:.52s; color: var(--accent); }
+@keyframes qbob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+```
+**Both bobbles run continuously, NOT only on hover** (spec §09 is wrong on this point — prototype wins).
+
+### D.8 Terminus pin pulse on world map
+SVG `<animate>` element (`index.html:1601–1605`):
+```xml
+<circle cx="229" cy="166" r="22" fill="none" stroke="#ffb43a" stroke-width="2" opacity=".5">
+  <animate attributeName="r"        values="20;30;20"    dur="2.4s" repeatCount="indefinite"/>
+  <animate attributeName="opacity"  values=".55;0;.55"   dur="2.4s" repeatCount="indefinite"/>
+</circle>
+```
+Reduced motion: replace with static `r=22 opacity=.55`.
+
+There's also a `.rt-dot` flicker on the legend's "LIVE · ORANGE LINE" badge — uses the same `flicker` keyframe as the arrivals "BOARDING" status:
+```css
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  47%      { opacity: .4; }
+  49%      { opacity: 1; }
+  50%      { opacity: .3; }
+  52%      { opacity: 1; }
+}
+.rt-dot { animation: flicker 1.5s infinite; }
+.arrivals-row .status.now { animation: flicker 1.5s infinite; }
+```
+
+### D.9 Pacific rope dashoffset draw
+**Not animated in the prototype.** The rope is rendered as static dashed paths (`stroke-dasharray="8 4"`) with no `stroke-dashoffset` animation. Spec §05's "rope draws over 2s" is fictional. Drop the animation; render the rope statically. (For polish, ADDITIVE: optionally add a `stroke-dashoffset` 200→0 animation on modal-open, but flag it as additive and disable on reduced motion.)
+
+There is also a separate `drawRope()` function in `app.js:873–905` that creates a dynamically-computed catmull-rom rope path. **NOTE:** this is unused for the inline atlas; it's a leftover for a different rope visualization. The visible rope in the modal is the hand-coded `<g class="wm-rope">` block (8 path segments). Use the hand-coded version.
+
+### D.10 Plaque carousel autoplay interval
+From `app.js:346–357`:
+```js
+function startAutoplay(){
+  if (total < 2) return;
+  stopAutoplay();
+  const dur = (window.TWEAKS?.autoplay_seconds || 5) * 1000;   // 5 seconds default
+  const step = 50;                                             // tick every 50ms
+  barTimer = setInterval(() => {
+    if (userStopped) { resetBar(); return; }
+    barW += (step/dur) * 100;
+    bar.style.width = Math.min(barW, 100) + "%";
+    if (barW >= 100) { barW = 0; go(idx + 1); }
+  }, step);
+}
+```
+- **5 seconds** per slide (default; `TWEAKS_DEFAULTS.autoplay_seconds = 2` in prototype's tweaks-panel default JSON, but the fallback is 5 — production uses **5**).
+- Progress bar `.autoplay-bar` fills from 0% to 100% width over the duration.
+- Stops on user nav (`userStopped = true`) until plaque re-enters viewport.
+- Drives by IntersectionObserver `threshold: .3`: starts when plaque enters, stops when it leaves.
+
+### D.11 Newsstand wall pan inertia coefficient
+**Not implemented in prototype.** The prototype's wall navigates via `prev/next wall buttons` (whole-wall slide via `transform: translateX(-N*100%)` with `transition: transform .6s cubic-bezier(.76,0,.24,1)`). There is NO pointer-drag pan, NO inertia. Spec §08's drag-to-pan-within-wall is additive — implement it on top, but note the prototype is silent.
+
+Wall slide transition:
+```css
+.wall-track { display: flex; transition: transform .6s cubic-bezier(.76,0,.24,1); }
+```
+
+### D.12 Newspaper drop-cap reveal
+**No reveal animation in prototype** — the drop cap is a static `::first-letter` rule:
+```css
+.reader .columns p:first-child::first-letter {
+  font-family: "Playfair Display", serif;
+  font-weight: 900;
+  font-size: 72px;
+  float: left;
+  line-height: .9;
+  padding: 6px 10px 0 0;
+  color: var(--accent);
+}
+```
+Spec §08's "drop-cap reveal animation" is fictional; nothing to disable.
+
+### D.13 Toast enter/exit
+**No toasts in prototype.** Spec §10 introduces them. Animations are spec-defined; implement per §10.
+
+### D.14 Modal scale + opacity enter/exit
+About modal (`index.html:683–686`):
+```css
+.about-modal     { animation: amfade .3s ease-out forwards; }
+@keyframes amfade { from { opacity: 0; } to { opacity: 1; } }
+
+.about-poster    { animation: amslide .45s cubic-bezier(.2, .8, .3, 1.1); }
+@keyframes amslide {
+  from { transform: translateY(40px) rotate(-3deg) scale(.92); opacity: 0; }
+  to   { transform: rotate(-.4deg)              scale(1);    opacity: 1; }
+}
+```
+- Backdrop: opacity `0 → 1` over 300ms ease-out.
+- Modal body: slides up + un-rotates + scales `.92 → 1` over 450ms with a slight spring `cubic-bezier(.2, .8, .3, 1.1)`.
+
+Lightbox (no enter animation in prototype — toggles `display:none/flex` directly via `.lightbox.open`).
+
+### D.15 (additive) Pull arrow on About trigger
+```css
+.atp-arrow { animation: pull 1.6s ease-in-out infinite; }
+@keyframes pull {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%      { transform: translateX(-50%) translateY(8px); }
+}
+```
+
+### D.16 (additive) Cursor blink on About card header
+```css
+.about-header .cursor { animation: blinkcur 1s steps(2) infinite; }
+@keyframes blinkcur { 50% { opacity: 0; } }
+```
+
+### D.17 (additive) Steam vents in line section
+```css
+.steam       { animation: steam 8s ease-in-out infinite; }
+.steam.s2    { animation-delay: 3s; }
+.steam.s3    { animation-delay: 5s; }
+@keyframes steam {
+  0%, 100% { transform: translateY(10px) scaleX(1);   opacity: .04; }
+  50%      { transform: translateY(-20px) scaleX(1.3); opacity: .12; }
+}
+```
+
+### D.18 (additive) Station node spin (upcoming state)
+```css
+.station-node.upcoming::after {
+  background: transparent; border: 2px dashed var(--accent);
+  animation: spin 6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+```
+
+### D.19 Hero scroll-cue blink
+```css
+.hero-scroll { animation: blink 2s infinite; }
+@keyframes blink { 50% { opacity: .35; } }
+```
+
+### D.20 Pulse (terminus icon at line origin)
+```css
+.terminus.upcoming .tn-icon::after {
+  content: ""; position: absolute; inset: 8px; border-radius: 50%;
+  background: var(--accent); animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1);  opacity: 1;  }
+  50%      { transform: scale(.7); opacity: .6; }
+}
 ```
 
 ## §E · Event handlers — extract literal JS
