@@ -129,7 +129,7 @@ export default function NewspaperReader({ post, index, total: _total }: Props) {
 
         <Link
           className="back-link font-mono"
-          href="/"
+          href="/#dispatches"
           style={{
             display: "inline-block",
             marginTop: 30,
