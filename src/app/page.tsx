@@ -4,6 +4,8 @@ import HeroPanel from "@/components/hero/HeroPanel";
 import Marquee from "@/components/hero/Marquee";
 import ScrollCue from "@/components/hero/ScrollCue";
 import AboutSection from "@/components/about/AboutSection";
+import DispatchesSection from "@/components/dispatches/DispatchesSection";
+import { getAllPosts } from "@/lib/mdx";
 
 // Page composition follows .spec/03-train-scene-rules.md:
 // - <div className="train-stage"> is sticky at the top of the viewport.
@@ -14,6 +16,7 @@ import AboutSection from "@/components/about/AboutSection";
 // Sections inside <main> get appended in Phase B (about, dispatches, line, footer).
 
 export default function Home() {
+  const posts = getAllPosts();
   return (
     <>
       <Nav />
@@ -33,7 +36,8 @@ export default function Home() {
         style={{ zIndex: 10, background: "var(--bg-primary)" }}
       >
         <AboutSection />
-        {/* Remaining Phase B sections (dispatches, line, footer) land here */}
+        <DispatchesSection posts={posts} />
+        {/* Remaining Phase B sections (line, footer) land here */}
       </main>
     </>
   );
