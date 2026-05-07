@@ -116,9 +116,21 @@ export default function MetroTrack({ projects }: Props) {
     };
     setTimeout(draw, 100);
     window.addEventListener("resize", onResize);
+
+    // Watch the container for size changes so plaque expansions ("WHY THIS
+    // STACK" toggle) trigger a line redraw — otherwise the line stops short
+    // of the DEPARTURE terminus when a card grows taller.
+    const body = bodyRef.current;
+    let ro: ResizeObserver | null = null;
+    if (body && typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(onResize);
+      ro.observe(body);
+    }
+
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", onResize);
+      if (ro) ro.disconnect();
     };
   }, [projects.length]);
 
