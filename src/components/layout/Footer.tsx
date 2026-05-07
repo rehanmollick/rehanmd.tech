@@ -93,14 +93,16 @@ export default function Footer() {
       </h3>
 
       <div
-        className="sub font-pixel"
+        className="sub"
         style={{
-          fontSize: "clamp(16px, 2vw, 22px)",
+          fontFamily: "var(--font-pixel), monospace",
+          fontSize: "clamp(14px, 1.8vw, 20px)",
           color: "var(--text-secondary)",
-          marginTop: 18,
-          letterSpacing: "0.18em",
+          marginTop: 22,
+          letterSpacing: "0.1em",
+          lineHeight: 1.4,
           display: "inline-flex",
-          gap: 12,
+          gap: 14,
           flexWrap: "wrap",
           justifyContent: "center",
         }}
@@ -111,6 +113,7 @@ export default function Footer() {
             className="q-q"
             style={{
               display: "inline-block",
+              fontFamily: "var(--font-pixel), monospace",
               animation: "qbob 2.6s ease-in-out infinite",
               animationDelay: `${i * 0.13}s`,
               color: i === SUB_CHARS.length - 1 ? "var(--accent)" : undefined,
