@@ -3,6 +3,7 @@ import HeroScene from "@/components/three/HeroScene";
 import HeroPanel from "@/components/hero/HeroPanel";
 import Marquee from "@/components/hero/Marquee";
 import ScrollCue from "@/components/hero/ScrollCue";
+import AboutSection from "@/components/about/AboutSection";
 
 // Page composition follows .spec/03-train-scene-rules.md:
 // - <div className="train-stage"> is sticky at the top of the viewport.
@@ -31,7 +32,8 @@ export default function Home() {
         className="below-train relative"
         style={{ zIndex: 10, background: "var(--bg-primary)" }}
       >
-        {/* Phase B sections will land here */}
+        <AboutSection />
+        {/* Remaining Phase B sections (dispatches, line, footer) land here */}
       </main>
     </>
   );
