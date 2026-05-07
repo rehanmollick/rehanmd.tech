@@ -391,12 +391,451 @@ For each section below, Claude Code opens `prototype/index.html`, finds the matc
 
 ### C.1 Hero (over R3F train)
 
+From `index.html` lines 1205–1216 + `app.js` line 10. The prototype panel is **simpler** than `04-hero-and-envelope.md` describes — there is NO eyebrow row, NO two-line h1, and NO divider+tagline. It is a single panel:
+
+```html
+<section class="hero">
+  <div class="marquee">
+    <div class="marquee-track" id="marquee-track"></div>
+  </div>
+  <div class="hero-panel">
+    <div class="panel-box">
+      <h1>Md Rehan Mollick</h1>
+      <div class="sub">SOFTWARE ENGINEER · UT AUSTIN · BUILDER</div>
+    </div>
+  </div>
+  <div class="hero-scroll">SCROLL</div>
+</section>
 ```
-TODO(spec): paste literal HTML for the hero panel <h1>, eyebrow, sub, divider line, marquee strings array, scroll-cue label.
+
+**Marquee string array** (`app.js:10`) — joined with `"  •  "` (two spaces + bullet + two spaces), repeated twice for seamless loop:
+```js
+const marqueeText = [
+  "WELCOME ABOARD",
+  "THIS IS NOT YOUR USUAL COMMUTE",
+  "HOW DID YOU END UP HERE?",
+  "THE TUNNEL GOES DEEPER",
+  "MIND THE GAP",
+  "NOW BOARDING: MARCH 2026",
+  "THIS TRAIN RUNS ON CAFFEINE",
+];
+const s = marqueeText.join("  •  ") + "  •  ";
+mt.textContent = s + s;
 ```
-Notes:
-- The marquee in the prototype is a single concatenated string with ` · ` separators, repeated twice for the seamless loop. Capture the EXACT string sequence.
-- The scroll-cue label is the literal text under the orange rule.
+
+**Marquee animation** — `45s linear infinite` (NOT 40s as `04-hero-and-envelope.md` says); font `var(--pixel)` VT323 22px, color `var(--accent-light)`, letter-spacing `.1em`, text-shadow `0 0 8px rgba(255,140,50,.6)`.
+
+**Scroll-cue label** — literal text `SCROLL`, font `var(--pixel)` 18px, color `var(--text-muted)`, letter-spacing `.3em`, animation `blink 2s infinite` (opacity 1 → .35 → 1).
+
+**RECONCILIATION with `04-hero-and-envelope.md`:** The spec's "BUILT BY HAND. SHIPPED ON TRACK." h1, the eyebrow row, divider line, and "Currently aboard the Burnt Orange Line." tagline are NOT present in the prototype. Per §13's override rule the prototype literal copy wins — use exactly the four strings above (`Md Rehan Mollick`, `SOFTWARE ENGINEER · UT AUSTIN · BUILDER`, the marquee array, `SCROLL`). Mark spec §04's expanded panel as out-of-scope.
+
+### C.2 About section + envelope
+
+The prototype's About trigger is a single "wheatpaste poster" card — there is **no sealed envelope with flap animation, no localStorage flag, no first-visit / subsequent-visit branching**. From `index.html` lines 1219–1245:
+
+```html
+<section id="about-trigger" class="about-trigger-wrap">
+  <div class="about-trigger" id="open-about" role="button" tabindex="0" aria-label="Open about poster">
+    <div class="atp-corner tl"></div><div class="atp-corner tr"></div>
+    <div class="atp-corner bl"></div><div class="atp-corner br"></div>
+    <div class="atp-tape t1"></div>
+    <div class="atp-tape t2"></div>
+    <div class="atp-eyebrow">▸ PULL HERE</div>
+    <div class="atp-title">WHO&nbsp;IS&nbsp;THIS&nbsp;GUY?</div>
+    <div class="atp-sub">Tap to read the full bulletin.</div>
+    <div class="atp-divider"></div>
+    <div class="atp-meta">
+      FILE NO. <strong>RM·26·001</strong><br/>
+      ISSUED — <strong>AUSTIN, TX</strong><br/>
+      SUBJECT — <strong>MD REHAN MOLLICK</strong><br/>
+      STATUS — <strong>BUILDING</strong>
+    </div>
+    <div class="atp-stamp">CLASSIFIED · OPEN ME</div>
+    <div class="atp-arrow">↘</div>
+    <div class="atp-noise"></div>
+  </div>
+</section>
+```
+
+Visible strings, exact:
+- Eyebrow: `▸ PULL HERE`
+- Title: `WHO IS THIS GUY?` (with non-breaking spaces between words)
+- Sub: `Tap to read the full bulletin.`
+- Meta block (each line `<strong>` for the value):
+  - `FILE NO. RM·26·001`
+  - `ISSUED — AUSTIN, TX`
+  - `SUBJECT — MD REHAN MOLLICK`
+  - `STATUS — BUILDING`
+- Round red stamp (`.atp-stamp`): `CLASSIFIED · OPEN ME`
+- Pull arrow glyph: `↘`
+
+**Card visual:** rotated `-2.2deg`, gradient `#f4e8c8 → #e9d9a8 → #d8c186` (160deg), inset shadow `inset 0 0 60px rgba(120,70,20,.18)` + outer drop shadow `0 30px 50px -10px rgba(0,0,0,.7)`. Hover: `rotate(-1deg) translateY(-6px) scale(1.015)`.
+
+**Click handler:** opens `#about-modal` (the bulletin) by toggling class `on`, sets `document.body.style.overflow='hidden'`. There is NO opening animation in the prototype besides the modal's own `amslide` keyframes — no flap, no letter, no seal.
+
+**RECONCILIATION with `04-hero-and-envelope.md`:** the entire "sealed envelope with flap animation + localStorage gate + pull-tab variant" specification in §04 is **NOT in the prototype**. Per §13's override the prototype's single pull-tab poster is the truth. Drop the `<SealedEnvelope>` / `<PullTabPoster>` split — implement only the single `<EnvelopePoster>` matching this markup. localStorage is unnecessary.
+
+The `OPEN` CTA the spec mentions does not exist — the entire poster IS the click target.
+
+### C.3 About bulletin modal
+
+From `index.html` lines 1402–1645. Header strings (literal):
+- `.ap-header` chip: `BULLETIN №07`
+- `.ap-header` authority text: `◉ ORANGE LINE TRANSIT AUTHORITY`
+- `.ap-close` button: `✕ CLOSE [ESC]`
+
+Body strings:
+- `.ap-eyebrow` (header): `PASSENGER PROFILE`
+- `.ap-title` (`#ap-title`): `Md Rehan<br>Mollick`
+- `.ap-tagline`: `CS @ UT Austin. I build a lot, ship most of it, and break the rest on purpose.`
+
+Section headings (each `<h3>` inside `.ap-section`):
+- `About`
+- `The Stack`
+- `AFK`
+
+Side-widget headings (each `.ap-widget h4`):
+- `◉ CURRENTLY WORKING ON`
+- `♫ NOW PLAYING`
+- `★ CURRENTLY OBSESSED WITH`
+- `▣ RECENT WIN`
+
+World-map atlas section:
+- Eyebrow: `ORIGIN · 8 STOPS · TERMINUS: AUSTIN`
+- Title: `From there to here.`
+- Header bullet: `RM`
+- Header title: `REHAN ATLAS`
+- Header right: `EFFECTIVE 2000 — PRESENT · ONE-WAY · 8,500 MI`
+- Stamp TL: `REHAN ATLAS · ED. 2026` / `≈ 8,500 MI · 4 COUNTRIES`
+- Stamp BR: `26 YEARS · 1 PASSENGER` / `EQUIRECTANGULAR PROJECTION`
+- Legend: `RED ROPE = ROUTE`, `STOP`, `TERMINUS ★ AUSTIN`
+
+Photos: `PHOTO · 01`, `PHOTO · 02`, `PHOTO · 03`, `PHOTO · 04`.
+
+Facts label + items:
+- `▸ FIELD NOTES`
+- `Born in Dhaka, raised on 7 zip codes`
+- `Owns 4 keyboards, uses 1`
+- `Tabs > spaces` (rendered with `&gt;`)
+- `Last hackathon: too recent to count`
+
+Footer of bulletin (`.ap-footer`):
+- Left: `POSTED · MARCH 2026 · DO NOT REMOVE`
+- Stamp circle: `VERIFIED` / `STATIONMASTER` (two lines via `<br>`)
+- Right: `rehanmd.tech · STATION 07`
+
+**Notes:**
+- The prototype does NOT have an "Ask Claude" widget. Spec §05 introduces one. Build it as **additive** — keep the prototype's 4 widgets and add a 5th `ASK ME ANYTHING (REALLY, ASK CLAUDE)` widget below them.
+- The prototype does NOT have a "THE LINKS" section. Add as **additive** per spec §05 with EMAIL/GITHUB/LINKEDIN/RESUME/TWITTER ticket-stub buttons.
+- The "now-playing equalizer" has 7 bars (`<span class="bar">` × 7), animation `eq 1s ease-in-out infinite` with stagger `:nth-child(n)` 0s/.15s/.3s/.45s/.6s/.75s/.9s.
+- Modal backdrop in prototype is `radial-gradient(ellipse at center, rgba(15,10,5,.85), rgba(0,0,0,.97))` with `backdrop-filter:blur(8px)` — slightly softer than spec's `rgba(0,0,0,.94)`. Use the prototype value.
+
+### C.4 Dispatches section (homepage strip)
+
+The prototype DOES NOT have a separate "homepage strip + see all on the wall" pattern — there is one combined `<section id="dispatches" class="dispatches">` containing a paginated wall (3×3 grid per page). From `index.html` lines 1248–1288:
+
+Heading row:
+```html
+<div class="dispatches-header">
+  <div>
+    <h2>Dispatches</h2>
+    <p>Field notes from the platform.</p>
+  </div>
+  <div class="dispatches-controls">
+    <button class="wall-nav-btn" id="wall-prev" title="Previous wall">◀</button>
+    <span class="wall-indicator" id="wall-indicator">Wall 1 / 1</span>
+    <button class="wall-nav-btn" id="wall-next" title="Next wall">▶</button>
+  </div>
+</div>
+```
+
+Strings:
+- H2: `Dispatches`
+- Sub: `Field notes from the platform.`
+- Wall counter format (from `app.js:121`): `WALL ${state.currentWall+1} / ${total}` (uppercase). Prev/next glyphs: `◀` / `▶`.
+- Each `.dispatch` card body template (`app.js:68–72`):
+  ```js
+  `<h3>${title}</h3>
+   <div class="d-meta">${formatDate(date)} · ${readTime||2} MIN</div>
+   <div class="d-excerpt">${excerpt}</div>
+   <div class="d-stamp">Posted</div>`
+  ```
+  - Date format: `formatDate(iso)` → `toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"}).toUpperCase()` → `"MAR 14, 2026"`.
+  - Read-time format: `${readTime||2} MIN` (default 2).
+  - Stamp glyph in corner: `Posted` (lowercased? — actual literal is `Posted` Title-Case).
+- "+ PIN A DISPATCH" tile (the appended "new dispatch" placeholder, `app.js:62`):
+  ```html
+  <div style="padding:20px">
+    <div style="font-size:38px;line-height:1">＋</div>
+    <div style="font-size:14px;letter-spacing:.2em;margin-top:8px">PIN A DISPATCH</div>
+  </div>
+  ```
+  - Glyph: full-width plus `＋` (U+FF0B), label `PIN A DISPATCH`.
+
+**RECONCILIATION with `08-newsstand-and-newspaper.md`:** spec §08 expects a dedicated "see all on the wall" CTA on the homepage strip and 3 latest cards there with the full wall living at `/blog`. The PROTOTYPE has only one wall on the homepage, no dedicated `/blog` wall, no "see all" CTA. Reconcile by:
+- Keep the homepage wall exactly as prototype renders it (paginated 3×3 with `← WALL N / N →`, plus the appended `+ PIN A DISPATCH` tile linking to `/admin/dispatches/new`).
+- Add a `/blog` route (per §08) that re-uses the same `<NewsstandWall>` component but in a fuller-page layout. Skip the homepage's separate "see all" affordance — the prev/next pager already implies "more walls."
+
+### C.5 The Line (metro projects section)
+
+From `index.html` lines 1290–1346.
+
+Heading row:
+- H2: `The Line`
+- Subtitle: `EVERY PROJECT IS A STOP.`
+- Badge: `LIVE · ORANGE LINE · 7 STATIONS` (with a pulsing red dot `.rt-dot` before the text)
+
+**Note:** spec §06 text `STOPS · LINE 01 · BURNT ORANGE` and `Currently boarding 7 stops · Live arrivals updated by Rehan.` are NOT in the prototype. Per §13 use the prototype copy.
+
+Arrivals board (literal — note the prototype uses HARDCODED rows, not data-driven):
+```html
+<div class="arrivals-top">
+  <span>▸ NEXT ARRIVALS</span>
+  <span class="clock" id="clock">--:--</span>
+</div>
+<div class="arrivals-row"><span class="time">NOW</span><span>KARMEN PLAYGROUND</span><span class="platform">PLAT 7</span><span class="status now">BOARDING</span></div>
+<div class="arrivals-row"><span class="time">-02M</span><span>GRIDPULSE</span><span class="platform">PLAT 6</span><span class="status">DEPARTED</span></div>
+<div class="arrivals-row"><span class="time">-05M</span><span>FLIGHTSENSE</span><span class="platform">PLAT 5</span><span class="status">DEPARTED</span></div>
+<div class="arrivals-row"><span class="time">+∞</span><span>NEXT STOP: TBD</span><span class="platform">—</span><span class="status">INCOMING</span></div>
+<div class="arrivals-headline">NOW BOARDING · ALL TRACKS ACTIVE</div>
+```
+- Header label: `▸ NEXT ARRIVALS`
+- Clock format: `HH:MM` (24h, two digits each, `app.js:15`); ticks every 30s.
+- 4 rows. Status values: `BOARDING` (red flicker), `DEPARTED`, `INCOMING`. Platform format: `PLAT N` or `—`. ETA values: `NOW`, `-02M`, `-05M`, `+∞`.
+- Sub headline: `NOW BOARDING · ALL TRACKS ACTIVE`
+
+Legend:
+- `ORANGE LINE · MAIN`
+- `STATION · SHIPPED`
+- `BRANCH · ABANDONED` (note: this exists in the prototype legend even though `BRANCHES = []`. Keep the legend chip per spec — but mark it visually muted)
+- `◉ NOW BOARDING: MARCH 2026`
+
+Terminus copy (line top + line bottom in the prototype — note the visual order is REVERSED from spec; "upcoming terminus" is on TOP, "origin" on BOTTOM):
+- Top (upcoming): label `NEXT STOP · TBD`, sub `The journey continues →`.
+- Bottom (origin): label `DEPARTURE`, sub `Where the line began.`
+
+Station plaque "STATION 0N" prefix:
+- `app.js:290`: `const stationNum=String(window.PROJECTS.length-index).padStart(2,"0")` — newest project is highest number (e.g. 07), oldest is `01`.
+- `.plaque-top` row: `STATION ${stationNum}` · `ORANGE LINE` · `${dateDisplay}`.
+
+Station-sign (the small black plate on the line itself, `app.js:165`): renders `project.stationName || project.title` in pixel font, uppercase, with `dateDisplay` as a small mono caption beside it.
+
+Status chip texts (from CSS `.status` classes only — there are no `LIVE/IN-PROG/SHIPPED/ARCHIVE` chips in the prototype line; those are spec-fictional). The arrivals-row statuses are `BOARDING/DEPARTED/INCOMING` only. **Use prototype statuses**, not the spec's invented set.
+
+### C.6 Project plaque + lightbox
+
+Plaque media placeholder caption (`app.js:308`): `<span>${escapeHtml(s.label||"media")}</span>` — the placeholder string is the slide's `.label` (from `data.js`, e.g. `"karmen — hero screen"`), NOT a `NO MEDIA · ${id}` template. Spec §07 is wrong on this; use the prototype literal.
+
+"BUILT WITH" tech header (`app.js:321`): `▸ BUILT WITH` (mono `9px` `.2em` uppercase, `var(--text-muted)`).
+
+Tech chip render (`app.js:292`): `<span class="tech-chip">${name}</span>` — no uppercasing, no truncation, no max chip count. Each chip has a `::before` 6px orange dot. Hover lifts `translateY(-1px)`.
+
+"WHY THIS STACK" toggle (`app.js:324`): `<button class="stack-toggle"><span class="chev">▸</span> WHY THIS STACK</button>` — clicking toggles `.open`, rotating the chevron 90deg and revealing `.stack-expanded` block with `name + reason` rows.
+
+Plaque link button labels (`app.js:317–318`):
+- Primary: `▸ LIVE DEMO` (only when `liveUrl` truthy)
+- Secondary: GitHub-icon SVG inline + ` REPO` (only when `repoUrl` truthy)
+
+Spec §07's `[ LIVE ↗ ]` / `[ CODE ↗ ]` bracket+arrow format is NOT in the prototype. Use prototype labels.
+
+Plaque header row format (`app.js:299–303`):
+- Left: `STATION ${stationNum}` (uppercase pixel)
+- Middle: `ORANGE LINE` (mono uppercase)
+- Right: `${dateDisplay}` (mono, e.g. `March 2026`)
+
+Lightbox close glyph (`index.html:1681`): `✕`, `id="lb-close"`. Arrow glyphs: `◀` (`#lb-prev`) and `▶` (`#lb-next`). Counter format (`app.js:404`): `${i+1} / ${n}`. There is NO info button / drawer in the prototype — spec §07's right-rail info drawer is additive; mark optional.
+
+Lightbox title bar (`app.js:391`): set to `project.title.toUpperCase()`.
+
+### C.7 Newsstand (`/blog`)
+
+The prototype does not have a dedicated `/blog` route — the "wall" lives on the homepage. Spec §08 introduces `/blog`. Reconcile by reusing the prototype's wall component.
+
+For the new `/blog` page, propose copy modeled on spec §08 (since prototype is silent):
+- Page eyebrow: `THE NEWSSTAND · WALL ${i+1} / ${n}`
+- H1: `READ ALL ABOUT IT.`
+- Sub: `Field notes from the platform.` (re-use prototype dispatches sub for consistency)
+- Search placeholder: `> SEARCH DISPATCHES…` (lowercase per prototype admin search style)
+- Prev/next glyphs: `◀` / `▶` (matches prototype)
+- Wall counter: `WALL ${i+1} / ${n}` (matches prototype)
+- "Reset pan" link: `RESET PAN` mono `10px` `.15em` uppercase `var(--accent)` — additive
+- Empty state: `THE WALL IS EMPTY · CHECK BACK SOON`
+
+### C.8 Newspaper (`/blog/[slug]`)
+
+From `app.js:423–443` + `data.js` body templates.
+
+Nameplate text: `The Platform Gazette` (NOT `THE REHAN HERALD` as spec §08 says; prototype wins).
+Sub-nameplate: `EST. 2026 · A NEWSPAPER OF ONE · PRINTED ON THE ORANGE LINE`.
+
+Dateline row (3 cells flexed):
+- Left: `${formatLongDate(post.date)}` → e.g. `MONDAY, MARCH 30, 2026`
+- Middle: `VOL. I · DISPATCH №${String(index+1).padStart(2,"0")}` → e.g. `VOL. I · DISPATCH №01`
+- Right: `$0.00 · FREE FOR COMMUTERS`
+
+Article body classes (from `.kicker`, `.headline`, `.deck`, `.byline`, `.columns`, `.pullquote` in CSS — see prototype lines 938–982). Body content is the post's `body` HTML literal from `data.js` (kept as-is).
+
+Back link (`app.js:434`): `← Back to the dispatches wall`, `class="back-link"`. Click handler: returns to `home` view + scrolls to `#dispatches`.
+
+Folio (page footer, `app.js:435–439`):
+```html
+<div class="folio">
+  <span>rehanmd.tech/blog/${post.slug}</span>
+  <span>— END OF DISPATCH —</span>
+  <span>PAGE A1</span>
+</div>
+```
+
+**RECONCILIATION:** spec §08 specifies different copy: `THE REHAN HERALD` nameplate, `BY MD REHAN MOLLICK · STAFF CORRESPONDENT` byline, `END OF DISPATCH · ${SLUG} · FILED ${date}` footer, `THIS DISPATCH HAS BEEN PULLED FROM THE PRESS` 404, `FROM THE WIRES` sidebar. None of those exist in the prototype. Prototype wins by default.
+
+For the 404 string, since the prototype is silent, use a NEW literal: `THIS DISPATCH HAS BEEN PULLED FROM THE PRESS` (spec value). Mark it as additive.
+
+### C.9 Footer
+
+From `index.html` lines 1349–1365 + the footer CSS at lines 1124–1163.
+
+```html
+<footer id="contact" class="footer">
+  <h3 class="footer-title">
+    <span>L</span><span>E</span><span>T</span><span>'</span><span>S</span>
+    <span class="sp">&nbsp;</span>
+    <span>D</span><span>O</span>
+    <span class="sp">&nbsp;</span>
+    <span>I</span><span>T</span><span>.</span>
+  </h3>
+  <div class="sub"><span class="q-q">WHAT</span> <span class="q-q">ARE</span> <span class="q-q">YOU</span> <span class="q-q">WAITING</span> <span class="q-q">ON?</span></div>
+  <div class="links">
+    <a href="#">◉ GITHUB</a>
+    <a href="#">▣ LINKEDIN</a>
+    <a href="#">✉ UT EMAIL</a>
+    <a href="#">✉ GMAIL</a>
+  </div>
+  <div class="credit">© 2026 MD REHAN MOLLICK · BUILT WITH NEXT.JS, REACT THREE FIBER, TYPESCRIPT, FRAMER MOTION</div>
+</footer>
+```
+
+Strings — **prototype wins over `09-footer.md`**:
+- Title: `LET'S DO IT.` (12 character spans + 2 space spans, exact wrap)
+- Sub: `WHAT ARE YOU WAITING ON?` (5 spans, last one `q-q` colored `var(--accent)`)
+- Links — ONLY 4 (no RESUME, no TWITTER):
+  1. `◉ GITHUB` → href TBD (prototype `#` placeholder)
+  2. `▣ LINKEDIN` → href TBD
+  3. `✉ UT EMAIL` → href TBD
+  4. `✉ GMAIL` → href TBD
+- Credit row (single-line, NOT split): `© 2026 MD REHAN MOLLICK · BUILT WITH NEXT.JS, REACT THREE FIBER, TYPESCRIPT, FRAMER MOTION`
+
+Real hrefs to wire (from earlier `CLAUDE.md` content + the existing in-scene CLICK HERE poster):
+- GitHub: `https://github.com/rehanmollick`
+- LinkedIn: `https://www.linkedin.com/in/rehanmollick`
+- UT Email: `mailto:rehanmollick07@utexas.edu`
+- Gmail: `mailto:rehanmollick07@gmail.com`
+
+**NO `MIND THE GAP …` line** in the prototype footer. The "MIND THE GAP" phrase only appears in the marquee strings. Spec §09's claim that it's a footer line is wrong; drop that requirement.
+
+**Title bobble** (CSS `@keyframes bob` lines 1144–1148): each span animates `1.4s ease-in-out infinite` with staggered delays per `:nth-child` (children 1,2,3,4,5,7,8,10,11,12 — skipping the spaces at 6 and 9). `0% → translateY(0) scale(1)`, `35% → translateY(-18px) scale(1.06) color:#ffd28a`, `70% → translateY(0) scale(1)`. **Already runs continuously in the prototype**, NOT only on hover (spec §09 is wrong; prototype wins).
+
+Reduced-motion: stop the bob animation per `prefers-reduced-motion` rule.
+
+### C.10 Admin
+
+From `index.html` lines 1380–1399 + `app.js` lines 446–830.
+
+**Sidebar** (`index.html:1383–1395`):
+- Brand: `▸ CONTROL`
+- Brand sub: `STATIONMASTER`
+- Nav items (each is a `<button data-panel="...">`):
+  - `Dashboard` (with `—` count chip, hardcoded)
+  - `Projects` (with count `7` from `#count-projects`)
+  - `＋ New Project`
+  - `Dispatches` (with count `2` from `#count-dispatches`)
+  - `＋ New Dispatch`
+  - `Media Library`
+  - `Settings`
+
+**Dashboard** (`app.js:465–497`):
+- H2: `Stationmaster's Desk`
+- Page sub: `WELCOME BACK, REHAN · ${formatLongDate(now)}`
+- Stat cards (4): `Stations` (count `PROJECTS.length`), `Dispatches` (count `DISPATCHES.length`), `Media Files` (sum of `slides.length`), `Abandoned Branches` (sum of `BRANCHES.names.length` → 0).
+- Quick Actions card header: `▸ Quick Actions`
+- Quick action button labels (in this order):
+  - `＋ Add a Project` (primary)
+  - `＋ Pin a Dispatch`
+  - `Upload Media`
+  - `View Live Site ↗`
+- Recent Activity card header: `▸ Recent Activity`
+- Recent activity hardcoded rows (literal, prototype-only — replace with real KV feed):
+  - `◦ KARMEN PLAYGROUND · station added · March 15`
+  - `◦ BUILDING REHANMD.TECH · dispatch pinned · March 31`
+  - `◦ GRIDPULSE · station added · January 20`
+  - `◦ FLIGHTSENSE · 4 slides uploaded · January 12`
+
+**Projects list** (`app.js:499–527`):
+- H2: `The Line · Stations`
+- Page sub: `${PROJECTS.length} STATIONS · DRAG TO REORDER · CLICK TO EDIT`
+- Search placeholder: `> search stations by name, tech, tag…`
+- Filter dropdown options: `All tags`, `hackathon`, `ai`, `web3`, `mobile`
+- Top-right button: `＋ New Station`
+- Row layout: `thumb · meta(title+tech) · date · status pill · actions`
+- Status pill text: `Published` (green)
+- Action buttons: `Edit`, `View`, `Delete` (mono `10px`)
+
+**Project edit form** (`app.js:529–630`):
+- H2 (new): `New Station`. H2 (edit): `Edit Station`.
+- Page sub (new): `ADD A NEW STOP TO THE LINE. REQUIRED FIELDS MARKED * — EVERYTHING ELSE IS OPTIONAL AND WILL BE OMITTED IF BLANK.`
+- Page sub (edit): `Station — ${title}`
+- Field labels (uppercased per CSS, but written in Title Case in HTML — so the HTML literal is Title Case):
+  - `Project title *`
+  - `Date *` + hint `Used for sorting on the line (newest at top)`
+  - `Date display (auto if blank)` + placeholder `e.g. January 2026`
+  - `Station name (optional · shown on station plate)` + placeholder `e.g. GridPulse Station · defaults to project title`
+  - `Description *` + placeholder `What does it do? Who's it for? Why build it?`
+  - `Context (optional · hackathon, internship, client, award)` + placeholder `e.g. HackTAMU 2026`
+  - `GitHub repo (optional)` + placeholder `https://github.com/…`
+  - `Live URL (optional)` + placeholder `https://…`
+  - `Tech stack * — add name + reason for using it`
+  - `Tags (optional · comma separated)` + placeholder `ai, hackathon, web3…`
+- Sidebar form-card headings: `▸ Media`, `▸ Visibility`, `▸ Station Sign Preview`
+- Media zone: `DROP MEDIA HERE` + sub `OR CLICK TO BROWSE · PNG JPG GIF MP4` + icon `⇪`
+- Visibility toggles: `Featured on line`, `Published` + helper `Unpublished stations are hidden from the public line.`
+- Save bar buttons: `Cancel`, `Delete station` (only on edit), `▸ Save changes` / `▸ Add to line`
+- Tech-row inputs: name placeholder `Name (e.g. Next.js)`, reason placeholder `Why this tech?`, remove button glyph `✕`
+- "Add tech" button: `＋ Add tech`
+
+**Dispatches list** (`app.js:676–700`):
+- H2: `Dispatches · Wall`
+- Page sub: `${DISPATCHES.length} POSTS ON THE WALL · ORGANIC LAYOUT · NEW POSTS PIN THEMSELVES TO THE FIRST OPEN SPOT`
+- Search placeholder: `> search dispatches…`
+- Top-right button: `＋ New Dispatch`
+- Status pill: `Pinned` (green)
+- Action buttons: `Edit`, `Unpin`
+
+**Dispatch form** (`app.js:710–773`):
+- H2 (new): `Pin a New Dispatch`. H2 (edit): `Edit Dispatch`.
+- Page sub: `WRITE FIRST · POLISH LATER · THE WALL HAS ROOM`
+- Field labels:
+  - `Title *` + placeholder `e.g. What I broke at 3am`
+  - `Slug (auto from title if blank)` + placeholder `what-i-broke-at-3am`
+  - `Date *`
+  - `Excerpt (first line shown on the wall)` + placeholder `One punchy sentence.`
+  - `Body * — MDX · supports headings, code blocks, pull quotes` + placeholder `## Start writing…`
+- Sidebar form-card headings: `▸ Paper Style`, `▸ Meta`, `▸ Cover Image`
+- Paper-style toggles: `Cream paper`, `Masking tape`, `Aged/stained`
+- Meta fields: `Tags (comma separated)` + placeholder `meta, rant, postmortem`; `Read time (min)` (number, default 3)
+- Cover-image label: `UPLOAD COVER` + icon `⇪`
+- Save bar buttons: `Cancel`, `Save Draft`, `▸ Save changes` / `▸ Pin to wall`
+
+**Media library** (`app.js:780–796`):
+- H2: `Media Library`
+- Page sub: `${total} FILES · DRAG TO REORDER · CLICK TO ATTACH TO A STATION`
+- Search placeholder: `> filter by project, filename…`
+- Top-right button: `⇪ Upload`
+- Tile shows project name (orange order-badge) + filename (the slide `label`).
+
+**Settings panel** (`app.js:798–830`) — **DROP per `MASTER-SPEC.md` "out of scope"**.
+
+**Confirm dialog** (`wireProjectsList()` `app.js:649`): `confirm("Delete this station from The Line?")` → on confirm, prototype `alert("(Prototype: would delete X)")`.
+
+**Save / submit handlers** (prototype is no-op): both project (`app.js:656`) and dispatch (`app.js:776`) form submits show an `alert("(Prototype: would save this …)")`. Production replaces these with API calls per `02-architecture.md`.
 
 ### C.2 About section + envelope
 
