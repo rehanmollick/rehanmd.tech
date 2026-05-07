@@ -114,6 +114,15 @@ button {
   background: var(--accent-dim);
 }
 
+/* Train Canvas wrapper — fills the sticky train-stage. Without this the
+   <Canvas> collapses to its 300x150 intrinsic size. */
+.canvas-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
 /* ============================================================
    Keyframes — extracted verbatim from .spec §D
    ============================================================ */
