@@ -156,11 +156,130 @@ The `<Kicker>`, `<Deck>`, `<Byline>`, `<Columns>`, `<PullQuote>` MDX components 
 The prototype's `aboutData` literal lives inside `app.js`. **Claude Code first task before building the bulletin: open `assets/prototype/app.js`, find the about-data definition (search for `aboutData`, `bio`, `pins`, `photos`, `facts`, `links`, `hometown`), copy it verbatim into `lib/about.ts.DEFAULT_ABOUT`, and append the literal definition to this file under §A.4 below.**
 
 #### §A.4 — About data literal (filled by Claude Code)
+
+**FINDING:** the prototype does NOT define an `aboutData` JS object. The about-modal content is inlined directly in `index.html` markup with `data-edit="..."` attributes acting as content slots, and the world-map pins are hand-positioned inside the modal's `<svg>` block. Below is the literal content extracted from `index.html` (lines 1405–1640) verbatim, restructured into the keyed shape the bulletin spec expects.
+
+```ts
+// lib/about.ts.DEFAULT_ABOUT — derived from prototype/index.html literal markup
+export const DEFAULT_ABOUT = {
+  // Header eyebrow + title (from .ap-eyebrow / .ap-title / .ap-tagline)
+  eyebrow: "PASSENGER PROFILE",
+  titleLine1: "Md Rehan",
+  titleLine2: "Mollick",
+  tagline: "CS @ UT Austin. I build a lot, ship most of it, and break the rest on purpose.",
+
+  // .ap-section[data-edit=bio]
+  bio: "Computer Science student at UT Austin. I spend most of my time building things — full-stack web, AI tooling, the occasional smart contract. The rest of the time I'm probably at the gym, in a pool, or losing at chess to someone I shouldn't be losing to.",
+
+  // .ap-stack[data-edit=stack] — 10 chips
+  stack: [
+    "Next.js","TypeScript","React","Three.js",
+    "Tailwind","Postgres","Solidity","Python",
+    "Vercel","Framer Motion",
+  ],
+
+  // .ap-section[data-edit=afk]
+  afk: "Climbing, swimming, gym, chess. Anything that gets me away from a keyboard for a couple hours.",
+
+  // .ap-side widgets (4 widgets, each big + optional small line)
+  widgets: {
+    currentProject:   { label: "◉ CURRENTLY WORKING ON",      big: "[ project name ]",                          small: "[ short description · timeframe ]" },
+    nowPlaying:       { label: "♫ NOW PLAYING",                big: "[ song · artist ]",                         equalizerBars: 7 },
+    obsessed:         { label: "★ CURRENTLY OBSESSED WITH",    big: "[ a movie / show / topic / random thing ]", small: "[ optional subtitle ]" },
+    win:              { label: "▣ RECENT WIN",                 big: "[ latest accomplishment ]",                 small: "[ where / when ]" },
+  },
+
+  // World-map atlas — eyebrow, title, frame copy
+  atlas: {
+    eyebrow: "ORIGIN · 8 STOPS · TERMINUS: AUSTIN",
+    title: "From there to here.",
+    headerBullet: "RM",
+    headerTitle: "REHAN ATLAS",
+    headerRight: "EFFECTIVE 2000 — PRESENT · ONE-WAY · 8,500 MI",
+    stampTL: ["REHAN ATLAS · ED. 2026", "≈ 8,500 MI · 4 COUNTRIES"],
+    stampBR: ["26 YEARS · 1 PASSENGER", "EQUIRECTANGULAR PROJECTION"],
+    legend: [
+      { kind: "rope",      label: "RED ROPE = ROUTE" },
+      { kind: "pin",       label: "STOP" },
+      { kind: "terminus",  label: "TERMINUS ★ AUSTIN" },
+    ],
+    // Pins are positioned both as SVG circles (viewBox 1000×500) AND as HTML overlays in % units.
+    // step = chronological visit order; final=true marks Austin terminus.
+    pins: [
+      { step: 1, name: "DHAKA",       sub: "BANGLADESH",         svgX: 751, svgY: 184, leftPct: 75.1, topPct: 36.8, anchor: "b", radius: 7  },
+      { step: 2, name: "TOKYO",       sub: "JAPAN · LAYOVER",    svgX: 888, svgY: 151, leftPct: 88.8, topPct: 30.2, anchor: "b", radius: 7  },
+      { step: 3, name: "QUEENS, NYC", sub: "NEW YORK · LANDING", svgX: 295, svgY: 137, leftPct: 29.5, topPct: 27.4, anchor: "t", radius: 7  },
+      { step: 4, name: "MIDLAND",     sub: "MICHIGAN",           svgX: 266, svgY: 129, leftPct: 26.6, topPct: 25.8, anchor: "l", radius: 6  },
+      { step: 5, name: "TAMPA",       sub: "FLORIDA",            svgX: 271, svgY: 172, leftPct: 27.1, topPct: 34.4, anchor: "r", radius: 6  },
+      { step: 6, name: "GREAT BEND",  sub: "KANSAS",             svgX: 226, svgY: 143, leftPct: 22.6, topPct: 28.6, anchor: "l", radius: 6  },
+      { step: 7, name: "DALLAS",      sub: "TEXAS · DETOUR",     svgX: 231, svgY: 159, leftPct: 23.1, topPct: 31.8, anchor: "l", radius: 6  },
+      { step: 8, name: "AUSTIN",      sub: "TX · 78712 · HOME",  svgX: 229, svgY: 166, leftPct: 22.9, topPct: 33.2, anchor: "b", final: true, label: "08 ★" },
+    ],
+    // Rope segments — quadratic Béziers between consecutive pins, hardcoded in viewBox space.
+    // The Tokyo→NYC segment wraps the Pacific by splitting at the right edge (888,151)→(990,90)
+    // and resuming on the left edge (10,90)→(295,137). Stroke #9a1a1a, width 2.8, dasharray 8 4.
+    rope: [
+      { from: 1, to: 2, d: "M 751 184 Q 825 130 888 151" },
+      { from: 2, to: 3, segments: [
+        { d: "M 888 151 Q 940 80 990 90" },
+        { d: "M 10 90 Q 100 60 295 137"  },
+      ]},
+      { from: 3, to: 4, d: "M 295 137 Q 280 120 266 129" },
+      { from: 4, to: 5, d: "M 266 129 Q 285 150 271 172" },
+      { from: 5, to: 6, d: "M 271 172 Q 240 175 226 143" },
+      { from: 6, to: 7, d: "M 226 143 Q 232 152 231 159" },
+      { from: 7, to: 8, d: "M 231 159 L 229 166" },
+    ],
+    // Austin terminus animation: r 20→30→20 over 2.4s indefinite + opacity .55→0→.55
+    terminusPulse: { rValues: "20;30;20", opacityValues: ".55;0;.55", dur: "2.4s" },
+  },
+
+  // .ap-photos — exactly 4 placeholder tiles, captions "PHOTO · 01" .. "PHOTO · 04"
+  // CSS rotations per nth-child: -1deg, 1.5deg+y6, -.5deg-y4, 2deg+y8
+  photos: [
+    { src: null, caption: "PHOTO · 01" },
+    { src: null, caption: "PHOTO · 02" },
+    { src: null, caption: "PHOTO · 03" },
+    { src: null, caption: "PHOTO · 04" },
+  ],
+
+  // .ap-facts — label + 4 list items
+  factsLabel: "▸ FIELD NOTES",
+  facts: [
+    "Born in Dhaka, raised on 7 zip codes",
+    "Owns 4 keyboards, uses 1",
+    "Tabs > spaces",
+    "Last hackathon: too recent to count",
+  ],
+
+  // .ap-footer — three cells (left text · stamp circle · right text)
+  footer: {
+    left:  "POSTED · MARCH 2026 · DO NOT REMOVE",
+    stamp: "VERIFIED\nSTATIONMASTER",   // \n is the literal <br/>
+    right: "rehanmd.tech · STATION 07",
+  },
+
+  // Header bar copy
+  header: {
+    bulletinChip: "BULLETIN №07",
+    authority: "◉ ORANGE LINE TRANSIT AUTHORITY",
+    closeLabel: "✕ CLOSE [ESC]",
+  },
+
+  // Hometown (derived from final pin)
+  hometown: { name: "Austin, TX", svgX: 229, svgY: 166 },
+
+  // KV extras the bulletin admin spec calls for but the prototype doesn't surface
+  // explicitly. Leave empty by default; admin can populate later.
+  links: [] as { label: string; href: string }[],
+};
 ```
-TODO(spec): paste the literal aboutData object from app.js here, byte-identical.
-Required keys based on bulletin spec: bio, tagline, hometown {name,lat,lng}, pins[],
-photos[], facts[], links[].
-```
+
+**Reconciliation notes for the rebuild:**
+1. Spec file `05-about-bulletin.md` describes a real-world Equal-Earth d3-geo map with separate `pins[]` having `lat/lng`. The PROTOTYPE does NOT use d3-geo or lat/lng — it uses a hand-drawn SVG world map (the embedded `wm-land` `<g>` group of fill-only paths in `index.html` line 1518) with pins positioned in viewBox `1000×500` coordinate space. Per §13's override rule, the prototype wins. Implementation should render the same hand-drawn SVG (or copy the path data verbatim into `public/data/world-land.svg`), NOT compute projections.
+2. Per spec §05 the spec file expected `lat/lng` pins from `/api/about`; reconcile by storing both `svgX/svgY` (rendering coords) and OPTIONAL `lat/lng` (admin convenience) in KV `about:config`.
+3. `[ song · artist ]` and `[ project name ]` placeholders are intentional filler strings — they remain visible until the admin populates them via `/admin/about`.
+4. Photos are visual-only placeholders (`PHOTO · 01` … `PHOTO · 04`) with diagonal beige stripes in the prototype. In production they'll receive real Blob URLs from the admin photo uploader.
 
 ## §B · CSS tokens — extract literal `:root` from `index.html`
 
