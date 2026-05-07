@@ -1,14 +1,12 @@
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { MDXRemote } from "next-mdx-remote/rsc";
-import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
-import rehypeHighlight from "rehype-highlight";
-import Nav from "@/components/layout/Nav";
-import mdxComponents from "@/components/blog/MDXComponents";
-import { getPostBySlug, getAllSlugs } from "@/lib/mdx";
+// /blog/[slug] — newspaper reader for one MDX dispatch.
+// No R3F train Canvas mounted here per .spec/03-train-scene-rules.md.
 
-interface PageProps {
+import { notFound } from "next/navigation";
+import Nav from "@/components/layout/Nav";
+import NewspaperReader from "@/components/dispatches/NewspaperReader";
+import { getAllPosts, getAllSlugs, getPostBySlug } from "@/lib/mdx";
+
+interface Props {
   params: Promise<{ slug: string }>;
 }
 
@@ -16,82 +14,29 @@ export async function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
-  if (!post) return { title: "Post Not Found" };
-
+  if (!post) return { title: "Dispatch — rehanmd.tech" };
   return {
-    title: `${post.title} — Md Rehan Mollick`,
+    title: `${post.title} — The Platform Gazette`,
     description: post.excerpt,
   };
 }
 
-export default async function BlogPost({ params }: PageProps) {
+export default async function DispatchPage({ params }: Props) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) notFound();
 
+  // Resolve issue number — newest first, so dispatch №01 is the most recent.
+  const all = getAllPosts();
+  const index = all.findIndex((p) => p.slug === slug);
+
   return (
     <>
       <Nav />
-      <main className="min-h-screen bg-bg-primary pt-24 pb-16 px-6">
-        <article className="max-w-2xl mx-auto">
-          {/* Back link */}
-          <Link
-            href="/blog"
-            className="font-mono text-xs text-text-muted hover:text-accent-light transition-colors mb-8 inline-block"
-          >
-            &larr; All posts
-          </Link>
-
-          {/* Header */}
-          <header className="mb-8">
-            <time className="font-mono text-xs text-text-muted block mb-2">
-              {post.date}
-            </time>
-            <h1 className="font-mono text-2xl md:text-3xl font-bold text-text-primary">
-              {post.title}
-            </h1>
-            {post.tags.length > 0 && (
-              <div className="flex gap-2 mt-3">
-                {post.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="font-mono text-[10px] text-accent/60 px-1.5 py-0.5 rounded bg-bg-secondary"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-          </header>
-
-          {/* MDX Content */}
-          <div className="prose-custom">
-            <MDXRemote
-              source={post.content}
-              options={{
-                mdxOptions: {
-                  remarkPlugins: [remarkGfm],
-                  rehypePlugins: [rehypeSlug, rehypeHighlight],
-                },
-              }}
-              components={mdxComponents}
-            />
-          </div>
-
-          {/* Footer */}
-          <div className="mt-16 pt-6 border-t border-bg-tertiary">
-            <Link
-              href="/blog"
-              className="font-mono text-sm text-text-muted hover:text-accent-light transition-colors"
-            >
-              &larr; Back to all posts
-            </Link>
-          </div>
-        </article>
-      </main>
+      <NewspaperReader post={post} index={index} total={all.length} />
     </>
   );
 }

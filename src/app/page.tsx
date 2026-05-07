@@ -1,53 +1,44 @@
 import Nav from "@/components/layout/Nav";
 import HeroScene from "@/components/three/HeroScene";
-import AboutSection from "@/components/sections/AboutSection";
-import MetroMap from "@/components/projects/MetroMap";
+import ScrollCue from "@/components/hero/ScrollCue";
+import AboutSection from "@/components/about/AboutSection";
+import DispatchesSection from "@/components/dispatches/DispatchesSection";
+import LineSection from "@/components/line/LineSection";
 import Footer from "@/components/layout/Footer";
+import { getAllPosts } from "@/lib/mdx";
+import { projects } from "@/data/projects";
+
+// Page composition follows .spec/03-train-scene-rules.md:
+// - <div className="train-stage"> is sticky at the top of the viewport.
+//   It contains the R3F Canvas + three HTML overlays (marquee, panel, cue).
+// - <main className="below-train"> scrolls over the sticky train, with an
+//   opaque background so the train is fully covered by section bodies below.
+//
+// Sections inside <main> get appended in Phase B (about, dispatches, line, footer).
 
 export default function Home() {
+  const posts = getAllPosts();
   return (
     <>
       <Nav />
 
-      {/* Fixed 3D train scene — always behind everything */}
-      <HeroScene />
-
-      {/* Scroll content — scrolls OVER the fixed train scene.
-           pointer-events-none on the wrapper so the train canvas
-           receives clicks; individual sections re-enable as needed. */}
-      <div className="relative z-10 pointer-events-none overflow-x-hidden">
-        {/* Transparent spacer — user sees full train scene through this */}
-        <div className="h-screen relative">
-          {/* Scroll hint */}
-          <div className="absolute bottom-14 left-1/2 -translate-x-1/2">
-            <div className="font-mono text-sm text-text-muted tracking-widest uppercase animate-pulse">
-              Scroll
-            </div>
-          </div>
-        </div>
-
-        {/* About Me — transparent bg, train still visible behind the card */}
-        <AboutSection />
-
-        {/* Fade-to-black gradient — train scene vanishes here */}
-        <div
-          className="h-[40vh]"
-          style={{
-            background: "linear-gradient(to bottom, transparent, #0a0a0a)",
-          }}
-          aria-hidden="true"
-        />
-
-        {/* Projects Section — re-enables pointer events */}
-        <div className="pointer-events-auto">
-          <MetroMap />
-        </div>
-
-        {/* Contact Footer — re-enables pointer events */}
-        <div className="pointer-events-auto">
-          <Footer />
-        </div>
+      <div
+        className="train-stage relative"
+        style={{ position: "sticky", top: 0, height: "100vh", zIndex: 0 }}
+      >
+        <HeroScene />
+        <ScrollCue />
       </div>
+
+      <main
+        className="below-train relative"
+        style={{ zIndex: 10, background: "var(--bg-primary)" }}
+      >
+        <AboutSection />
+        <DispatchesSection posts={posts} />
+        <LineSection projects={projects} />
+        <Footer />
+      </main>
     </>
   );
 }

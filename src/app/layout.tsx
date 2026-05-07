@@ -1,32 +1,54 @@
 import type { Metadata } from "next";
-import { Space_Mono, Inter, JetBrains_Mono, Press_Start_2P } from "next/font/google";
+import {
+  Press_Start_2P,
+  JetBrains_Mono,
+  Playfair_Display,
+  Source_Serif_4,
+  Special_Elite,
+} from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import SessionProviderClient from "@/components/providers/SessionProviderClient";
 import "@/styles/globals.css";
 
-const spaceMono = Space_Mono({
-  weight: ["400", "700"],
-  subsets: ["latin"],
-  variable: "--font-space-mono",
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains",
-  display: "swap",
-});
-
-const pressStart2P = Press_Start_2P({
+// Pixel display face — used for hero h1, section h2, plaque title, footer LET'S DO IT,
+// station signs, admin h2. Per user confirmation: keep Press Start 2P (not the prototype's VT323).
+const pixel = Press_Start_2P({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-pixel",
+  display: "swap",
+});
+
+// Mono — eyebrows, meta, admin UI, badges, code chips
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
+// Display serif (italic-capable) — bulletin title, newspaper masthead, headlines, drop caps
+const serif = Playfair_Display({
+  weight: ["600", "700", "900"],
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+});
+
+// Body serif — bulletin paragraphs, newspaper body
+const bodySerif = Source_Serif_4({
+  weight: ["400", "600"],
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-body-serif",
+  display: "swap",
+});
+
+// Typewriter face — dispatch cards (cork wall)
+const typewriter = Special_Elite({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-type",
   display: "swap",
 });
 
@@ -61,12 +83,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const fontVars = `${pixel.variable} ${mono.variable} ${serif.variable} ${bodySerif.variable} ${typewriter.variable}`;
   return (
-    <html
-      lang="en"
-      className={`${spaceMono.variable} ${inter.variable} ${jetbrainsMono.variable} ${pressStart2P.variable}`}
-    >
-      <body className="font-sans bg-bg-primary text-text-primary">
+    <html lang="en" className={fontVars}>
+      <body>
         <SessionProviderClient>{children}</SessionProviderClient>
         <Analytics />
       </body>

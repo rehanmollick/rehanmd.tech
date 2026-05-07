@@ -1,66 +1,179 @@
 "use client";
 
-import Link from "next/link";
-import { motion } from "framer-motion";
+// Footer — bouncing LET'S DO IT. + sub + 4 contact links + credit row.
+// Verbatim copy and stagger from prototype/index.html lines 1349–1365
+// + CSS lines 1124–1163 per .spec/13 §C.9 + §D.7.
 
-/**
- * Bobble-animated "LET'S DO IT" footer — each letter rocks in sequence.
- * Orange strip removed; cleaner spacing.
- */
+const TITLE_CHARS: { char: string; isSpace: boolean }[] = [
+  { char: "L", isSpace: false },
+  { char: "E", isSpace: false },
+  { char: "T", isSpace: false },
+  { char: "'", isSpace: false },
+  { char: "S", isSpace: false },
+  { char: " ", isSpace: true },
+  { char: "D", isSpace: false },
+  { char: "O", isSpace: false },
+  { char: " ", isSpace: true },
+  { char: "I", isSpace: false },
+  { char: "T", isSpace: false },
+  { char: ".", isSpace: false },
+];
+
+// :nth-child stagger from prototype CSS lines 1134–1143
+// (skipping :nth-child(6) and :nth-child(9) which are spaces)
+const STAGGER_S: Record<number, number> = {
+  1: 0,
+  2: 0.08,
+  3: 0.16,
+  4: 0.24,
+  5: 0.32,
+  7: 0.48,
+  8: 0.56,
+  10: 0.72,
+  11: 0.8,
+  12: 0.88,
+};
+
+const SUB_CHARS = ["WHAT", "ARE", "YOU", "WAITING", "ON?"];
+
+const LINKS: { label: string; href: string }[] = [
+  { label: "◉ GITHUB", href: "https://github.com/rehanmollick" },
+  { label: "▣ LINKEDIN", href: "https://www.linkedin.com/in/rehanmollick" },
+  { label: "✉ UT EMAIL", href: "mailto:rehanmollick07@utexas.edu" },
+  { label: "✉ GMAIL", href: "mailto:rehanmollick07@gmail.com" },
+];
+
 export default function Footer() {
-  const letters = "LET'S DO IT".split("");
-
   return (
-    <footer className="relative border-t border-white/5 bg-bg-primary py-20 px-6">
-      <div className="max-w-6xl mx-auto">
-        <h2
-          className="text-center text-6xl md:text-8xl font-black tracking-tight mb-12 select-none"
-          style={{ fontFamily: "var(--font-space-mono), monospace" }}
-        >
-          {letters.map((ch, i) => (
-            <motion.span
+    <footer
+      id="contact"
+      className="footer"
+      style={{
+        background: "var(--page-outer)",
+        padding: "80px 20px 50px",
+        textAlign: "center",
+        position: "relative",
+        overflow: "hidden",
+        zIndex: 10,
+      }}
+    >
+      <h3
+        className="footer-title"
+        style={{
+          fontFamily: "var(--font-pixel), monospace",
+          fontSize: "clamp(48px, 8vw, 96px)",
+          color: "var(--accent-light)",
+          margin: 0,
+          letterSpacing: "0.06em",
+          lineHeight: 1,
+          textShadow: "0 0 24px rgba(255,140,50,.45), 0 4px 0 #6a2a00",
+          display: "inline-flex",
+          justifyContent: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        {TITLE_CHARS.map((c, i) => {
+          const idx = i + 1;
+          const delay = STAGGER_S[idx];
+          return (
+            <span
               key={i}
-              className="inline-block text-text-primary"
-              animate={{
-                y: [0, -8, 0, 0],
-                rotate: [0, -3, 3, 0],
-                color: ["#f5f5f5", "#bf5700", "#f5f5f5", "#f5f5f5"],
+              className={c.isSpace ? "sp" : undefined}
+              style={{
+                display: "inline-block",
+                fontFamily: "var(--font-pixel), monospace",
+                animation: c.isSpace ? "none" : "bob 1.4s ease-in-out infinite",
+                animationDelay: delay !== undefined ? `${delay}s` : undefined,
+                transformOrigin: "50% 80%",
+                width: c.isSpace ? "0.4em" : undefined,
               }}
-              transition={{
-                duration: 2.4,
-                repeat: Infinity,
-                delay: i * 0.12,
-                ease: "easeInOut",
-              }}
-              style={{ whiteSpace: ch === " " ? "pre" : undefined }}
             >
-              {ch === " " ? "\u00A0" : ch}
-            </motion.span>
-          ))}
-        </h2>
+              {c.char}
+            </span>
+          );
+        })}
+      </h3>
 
-        <div className="flex flex-wrap justify-center gap-x-10 gap-y-4 font-mono text-sm">
-          <FooterLink href="mailto:rehanmollick07@utexas.edu" label="Email" />
-          <FooterLink href="https://github.com/rehanmollick" label="GitHub" external />
-          <FooterLink href="https://www.linkedin.com/in/rehanmollick/" label="LinkedIn" external />
-          <FooterLink href="/blog" label="Dispatches" />
-        </div>
+      <div
+        className="sub"
+        style={{
+          fontFamily: "var(--font-pixel), monospace",
+          fontSize: "clamp(14px, 1.8vw, 20px)",
+          color: "var(--text-secondary)",
+          marginTop: 22,
+          letterSpacing: "0.1em",
+          lineHeight: 1.4,
+          display: "inline-flex",
+          gap: 14,
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
+        {SUB_CHARS.map((word, i) => (
+          <span
+            key={word}
+            className="q-q"
+            style={{
+              display: "inline-block",
+              fontFamily: "var(--font-pixel), monospace",
+              animation: "qbob 2.6s ease-in-out infinite",
+              animationDelay: `${i * 0.13}s`,
+              color: i === SUB_CHARS.length - 1 ? "var(--accent)" : undefined,
+            }}
+          >
+            {word}
+          </span>
+        ))}
+      </div>
 
-        <p className="text-center text-text-muted text-xs font-mono mt-12 tracking-widest uppercase">
-          © {new Date().getFullYear()} Rehan Mollick · Built in Austin
-        </p>
+      <div
+        className="links font-mono"
+        style={{
+          display: "flex",
+          gap: 22,
+          justifyContent: "center",
+          marginTop: 20,
+          flexWrap: "wrap",
+        }}
+      >
+        {LINKS.map((link) => (
+          <a
+            key={link.label}
+            href={link.href}
+            target={link.href.startsWith("http") ? "_blank" : undefined}
+            rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
+            style={{
+              fontSize: 11,
+              color: "var(--text-secondary)",
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              textDecoration: "none",
+              transition: "color .15s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "var(--accent-light)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "var(--text-secondary)";
+            }}
+          >
+            {link.label}
+          </a>
+        ))}
+      </div>
+
+      <div
+        className="credit font-mono"
+        style={{
+          fontSize: 10,
+          color: "var(--text-muted)",
+          marginTop: 30,
+          letterSpacing: "0.15em",
+        }}
+      >
+        © 2026 MD REHAN MOLLICK · BUILT WITH NEXT.JS, REACT THREE FIBER,
+        TYPESCRIPT, FRAMER MOTION
       </div>
     </footer>
   );
-}
-
-function FooterLink({ href, label, external }: { href: string; label: string; external?: boolean }) {
-  const cls = "text-text-secondary hover:text-accent transition-colors tracking-wide";
-  if (external)
-    return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
-        {label} ↗
-      </a>
-    );
-  return <Link href={href} className={cls}>{label}</Link>;
 }
