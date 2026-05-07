@@ -22,6 +22,7 @@ const NAV: NavItem[] = [
   { href: "/admin/projects/new", label: "＋ New Project" },
   { href: "/admin/dispatches", label: "Dispatches" },
   { href: "/admin/dispatches/new", label: "＋ New Dispatch" },
+  { href: "/admin/about", label: "About Config" },
   { href: "/admin/media", label: "Media Library" },
 ];
 
