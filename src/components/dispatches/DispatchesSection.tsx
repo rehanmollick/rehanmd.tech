@@ -5,7 +5,6 @@
 // prototype/app.js lines 36–130 + index.html lines 1248–1288 per .spec/13 §C.4.
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import type { BlogPostMeta } from "@/lib/mdx";
 import DispatchCard from "./DispatchCard";
 
@@ -232,7 +231,7 @@ export default function DispatchesSection({ posts }: Props) {
                 {wallItems.map((item, i) => {
                   const layout = layouts[wi][i];
                   if (item === NEW_DISPATCH_TILE) {
-                    return <NewDispatchTile key="add" layout={layout} />;
+                    return <ComingSoonTile key="more" layout={layout} />;
                   }
                   return (
                     <DispatchCard
@@ -291,15 +290,17 @@ function WallNavBtn({
   );
 }
 
-function NewDispatchTile({
+// Public-facing "end of stream" placeholder — same striped paper as the
+// prototype's admin tile but with no link and no plus glyph.
+function ComingSoonTile({
   layout,
 }: {
   layout: { x: number; y: number; w: number; h: number; tilt: number; z: number };
 }) {
   return (
-    <Link
-      href="/admin/dispatches/new"
-      className="dispatch new-dispatch-btn font-pixel"
+    <div
+      aria-hidden
+      className="dispatch coming-soon-tile font-pixel"
       style={{
         position: "absolute",
         left: `${layout.x}%`,
@@ -310,23 +311,24 @@ function NewDispatchTile({
         zIndex: layout.z,
         background:
           "repeating-linear-gradient(45deg, #1a1208 0 8px, #2a1c0f 8px 16px)",
-        color: "var(--accent-light)",
-        border: "2px dashed var(--accent)",
+        color: "var(--text-muted)",
+        border: "2px dashed var(--accent-dim)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         textAlign: "center",
-        fontSize: 22,
-        textDecoration: "none",
+        fontSize: 18,
       }}
     >
       <div style={{ padding: 20 }}>
-        <div style={{ fontSize: 38, lineHeight: 1 }}>＋</div>
-        <div style={{ fontSize: 14, letterSpacing: "0.2em", marginTop: 8 }}>
-          PIN A DISPATCH
+        <div style={{ fontSize: 28, lineHeight: 1, color: "var(--accent-dim)" }}>
+          ◉
+        </div>
+        <div style={{ fontSize: 13, letterSpacing: "0.2em", marginTop: 10 }}>
+          MORE COMING SOON
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
