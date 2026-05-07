@@ -58,8 +58,9 @@ export default function Footer() {
       }}
     >
       <h3
-        className="footer-title font-pixel"
+        className="footer-title"
         style={{
+          fontFamily: "var(--font-pixel), monospace",
           fontSize: "clamp(48px, 8vw, 96px)",
           color: "var(--accent-light)",
           margin: 0,
@@ -80,6 +81,7 @@ export default function Footer() {
               className={c.isSpace ? "sp" : undefined}
               style={{
                 display: "inline-block",
+                fontFamily: "var(--font-pixel), monospace",
                 animation: c.isSpace ? "none" : "bob 1.4s ease-in-out infinite",
                 animationDelay: delay !== undefined ? `${delay}s` : undefined,
                 transformOrigin: "50% 80%",
