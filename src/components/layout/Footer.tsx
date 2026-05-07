@@ -61,12 +61,12 @@ export default function Footer() {
         className="footer-title"
         style={{
           fontFamily: "var(--font-pixel), monospace",
-          fontSize: "clamp(48px, 8vw, 96px)",
+          fontSize: "clamp(28px, 4.5vw, 56px)",
           color: "var(--accent-light)",
           margin: 0,
           letterSpacing: "0.06em",
           lineHeight: 1,
-          textShadow: "0 0 24px rgba(255,140,50,.45), 0 4px 0 #6a2a00",
+          textShadow: "0 0 18px rgba(255,140,50,.4), 0 3px 0 #6a2a00",
           display: "inline-flex",
           justifyContent: "center",
           flexWrap: "wrap",
@@ -98,13 +98,13 @@ export default function Footer() {
         className="sub"
         style={{
           fontFamily: "var(--font-pixel), monospace",
-          fontSize: "clamp(14px, 1.8vw, 20px)",
+          fontSize: "clamp(10px, 1.2vw, 13px)",
           color: "var(--text-secondary)",
-          marginTop: 22,
+          marginTop: 18,
           letterSpacing: "0.1em",
           lineHeight: 1.4,
           display: "inline-flex",
-          gap: 14,
+          gap: 10,
           flexWrap: "wrap",
           justifyContent: "center",
         }}
