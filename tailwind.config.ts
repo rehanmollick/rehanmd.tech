@@ -9,52 +9,106 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Page outer (body bg) — darker than --bg-primary
+        "page-outer": "var(--page-outer)",
+
+        // Core palette — verbatim from prototype/index.html :root
         bg: {
-          primary: "#0a0a0a",
-          secondary: "#111111",
-          tertiary: "#1a1a1a",
+          primary: "var(--bg-primary)",
+          secondary: "var(--bg-secondary)",
+          tertiary: "var(--bg-tertiary)",
         },
         accent: {
-          DEFAULT: "#BF5700",
-          light: "#E87A2E",
-          dim: "#8B3F00",
-          glow: "#FF6B1A",
+          DEFAULT: "var(--accent)",
+          light: "var(--accent-light)",
+          dim: "var(--accent-dim)",
+          deep: "var(--accent-deep)",
+          glow: "var(--accent-glow)",
         },
         text: {
-          primary: "#f5f5f5",
-          secondary: "#a1a1a1",
-          muted: "#666666",
+          primary: "var(--text-primary)",
+          secondary: "var(--text-secondary)",
+          muted: "var(--text-muted)",
         },
-        tunnel: {
-          light: "#FFB366",
-          fog: "#0d0d0d",
+        brick: {
+          a: "var(--brick-a)",
+          b: "var(--brick-b)",
+          mortar: "var(--brick-mortar)",
+        },
+        amber: "var(--amber)",
+        lamp: "var(--lamp)",
+
+        // Bulletin (cream paper)
+        paper: {
+          DEFAULT: "var(--paper)",
+          2: "var(--paper-2)",
+          3: "var(--paper-3)",
+          dark: "var(--paper-dark)",
+          text: "var(--paper-text)",
+          eyebrow: "var(--paper-eyebrow)",
+          rule: "var(--paper-rule)",
+        },
+        bulletin: {
+          stamp: "var(--bulletin-stamp-red)",
+          amber: "var(--bulletin-amber)",
+        },
+
+        // Newspaper
+        news: {
+          paper: "var(--news-paper)",
+          bg: "var(--news-paper-bg)",
+          rule: "var(--news-rule)",
+          text: "var(--news-text)",
+        },
+
+        // Tape / cork accents
+        tape: {
+          amber: "var(--tape-amber)",
+        },
+        cork: {
+          warm: "var(--cork-warm-1)",
         },
       },
       fontFamily: {
-        mono: ["var(--font-space-mono)", "monospace"],
-        sans: ["var(--font-inter)", "sans-serif"],
-        code: ["var(--font-jetbrains)", "monospace"],
+        pixel: ["var(--font-pixel)", "monospace"],
+        mono: [
+          "var(--font-mono)",
+          "JetBrains Mono",
+          "IBM Plex Mono",
+          "ui-monospace",
+          "monospace",
+        ],
+        serif: ["var(--font-serif)", "Playfair Display", "Georgia", "serif"],
+        "body-serif": [
+          "var(--font-body-serif)",
+          "Source Serif 4",
+          "Georgia",
+          "serif",
+        ],
+        type: ["var(--font-type)", "Special Elite", "Courier New", "monospace"],
+        "news-body": ["Georgia", "Times New Roman", "serif"],
       },
       animation: {
-        "flicker": "flicker 3s ease-in-out infinite",
-        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
-        "fade-up": "fade-up 0.6s ease-out",
+        marquee: "marquee 45s linear infinite",
+        bob: "bob 1.4s ease-in-out infinite",
+        qbob: "qbob 2.6s ease-in-out infinite",
+        flicker: "flicker 1.5s infinite",
+        flick: "flick 4s ease-in-out infinite",
+        eq: "eq 1s ease-in-out infinite",
+        pulse: "pulse 2s infinite",
+        spin: "spin 6s linear infinite",
+        blink: "blink 2s infinite",
+        blinkcur: "blinkcur 1s steps(2) infinite",
+        pull: "pull 1.6s ease-in-out infinite",
+        steam: "steam 8s ease-in-out infinite",
+        amfade: "amfade .3s ease-out forwards",
+        amslide: "amslide .45s cubic-bezier(.2,.8,.3,1.1)",
       },
-      keyframes: {
-        flicker: {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.85" },
-          "52%": { opacity: "0.95" },
-          "54%": { opacity: "0.8" },
-        },
-        "glow-pulse": {
-          "0%, 100%": { boxShadow: "0 0 5px rgba(191, 87, 0, 0.3)" },
-          "50%": { boxShadow: "0 0 20px rgba(191, 87, 0, 0.6)" },
-        },
-        "fade-up": {
-          "0%": { opacity: "0", transform: "translateY(20px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
+      letterSpacing: {
+        widest2: "0.2em",
+        widest3: "0.25em",
+        widest4: "0.3em",
+        widest5: "0.35em",
       },
     },
   },
