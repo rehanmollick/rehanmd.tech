@@ -1200,27 +1200,227 @@ Lightbox (no enter animation in prototype — toggles `display:none/flex` direct
 
 ## §E · Event handlers — extract literal JS
 
-For every interaction the user can do, find the handler in `app.js` and replicate the same flow in React:
+### E.1 Envelope (about trigger) click → modal open
+From `app.js:867–921` (the IIFE wrapping the about modal).
+```js
+const modal   = document.getElementById('about-modal');
+const trigger = document.getElementById('open-about');
+const closeBtn = document.getElementById('ap-close');
 
+function open()  { modal.classList.add('on');    document.body.style.overflow = 'hidden'; requestAnimationFrame(() => setTimeout(drawRope, 30)); }
+function close() { modal.classList.remove('on'); document.body.style.overflow = '';      }
+
+trigger.addEventListener('click', open);
+trigger.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+});
 ```
-TODO(spec):
-  E.1 Envelope click → open animation → modal open
-  E.2 Modal close (Esc, backdrop, X)
-  E.3 Plaque media click → open lightbox at index
-  E.4 Lightbox arrow nav, keyboard nav, thumbnail click
-  E.5 Lightbox info drawer toggle
-  E.6 Newsstand pan: pointerdown / pointermove / pointerup / pointercancel — note all clamping rules
-  E.7 Newsstand prev/next walls
-  E.8 Newsstand search filter logic
-  E.9 Footer LET'S DO IT hover bobble (CSS only? or JS?)
-  E.10 Footer "MIND THE GAP" click → contact modal
-  E.11 Top nav route change handlers
-  E.12 Admin form submit → API call → toast
-  E.13 Admin brain-dump compose stream consumer
-  E.14 Ask-Claude submit
-  E.15 Now-playing 30s polling
-  E.16 World-map pin hover label
+- Open via click OR keyboard (Enter / Space) — `<div role="button" tabindex="0">`.
+- Body scroll lock while open.
+- No enter animation other than the CSS `amfade` + `amslide` keyframes (D.14).
+- A second binding (`app.js:923–928`) opens the modal from any element with `data-open-about` attribute — used by the nav `ABOUT` link.
+
+### E.2 Modal close (Esc, backdrop, X)
+```js
+closeBtn && closeBtn.addEventListener('click', close);
+modal.addEventListener('click', e => { if (e.target === modal) close(); });   // backdrop only
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && modal.classList.contains('on')) close();
+});
 ```
+- `Esc` closes.
+- Click on the backdrop (`e.target === modal`) closes; click inside the poster does NOT.
+- Resize while open redraws the rope: `window.addEventListener('resize', () => { if (modal.classList.contains('on')) drawRope(); });`
+
+### E.3 Plaque media click → open lightbox at index
+From `app.js:364–367`:
+```js
+media.addEventListener('click', e => {
+  if (e.target.closest('[data-nav]') || e.target.classList.contains('dot')) return;
+  openLightbox(project, idx);
+});
+```
+- Click on the media area (anywhere except prev/next arrows or dot indicators) opens the lightbox at the current carousel index.
+- `idx` comes from the carousel's local closure state.
+
+### E.4 Lightbox arrow nav, keyboard nav, thumbnail click
+From `app.js:406–417`:
+```js
+$("#lb-prev").addEventListener("click", () => {
+  state.lightbox.idx = (state.lightbox.idx - 1 + state.lightbox.slides.length) % state.lightbox.slides.length;
+  lbUpdate();
+});
+$("#lb-next").addEventListener("click", () => {
+  state.lightbox.idx = (state.lightbox.idx + 1) % state.lightbox.slides.length;
+  lbUpdate();
+});
+$("#lb-close").addEventListener("click", closeLightbox);
+$("#lightbox").addEventListener("click", e => { if (e.target.id === "lightbox") closeLightbox(); });
+
+document.addEventListener("keydown", e => {
+  const lbOpen = $("#lightbox").classList.contains("open");
+  if (!lbOpen) return;
+  if (e.key === "Escape")    closeLightbox();
+  if (e.key === "ArrowLeft") $("#lb-prev").click();
+  if (e.key === "ArrowRight") $("#lb-next").click();
+});
+
+function closeLightbox(){
+  $("#lightbox").classList.remove("open");
+  document.body.style.overflow = "";
+}
+```
+- Wraparound on prev/next.
+- `Esc` / `←` / `→` keyboard support.
+- Click on the backdrop closes (target id === "lightbox").
+- **No thumbnail strip in prototype.** Spec §07's thumb strip is additive.
+
+### E.5 Lightbox info drawer toggle
+**Not in prototype.** Skip or implement as additive per §07.
+
+### E.6 Newsstand pan (pointerdown / pointermove / pointerup / pointercancel)
+**Not in prototype.** The prototype's wall is paginated only — no within-wall pan. Spec §08's pan logic is additive. If implemented:
+- `pointerdown` → record `panStartX` and `panStart = panX`.
+- `pointermove` → `panX = clamp(panStart + (e.clientX - panStartX), -(corkW - viewportW), 0)`.
+- `pointerup / pointercancel` → release; reduced-motion disables inertial coast.
+
+### E.7 Newsstand prev/next walls
+From `app.js:117–126`:
+```js
+function updateWallUI(){
+  const track = $("#wall-track");
+  track.style.transform = `translateX(-${state.currentWall * 100}%)`;
+  const total = state.walls.length;
+  $("#wall-indicator").textContent = `WALL ${state.currentWall + 1} / ${total}`;
+  $("#wall-prev").disabled = state.currentWall === 0;
+  $("#wall-next").disabled = state.currentWall >= total - 1;
+}
+$("#wall-prev").addEventListener("click", () => { if (state.currentWall > 0)                       { state.currentWall--; updateWallUI(); }});
+$("#wall-next").addEventListener("click", () => { if (state.currentWall < state.walls.length - 1) { state.currentWall++; updateWallUI(); }});
+```
+- Prev/next disabled at boundaries via `disabled` attribute (CSS opacity `.3` cursor not-allowed).
+- 9 dispatches per wall (`PER_WALL = 9`, `app.js:37`); a final `+ PIN A DISPATCH` placeholder is appended after the real dispatches before pagination, so if there are 9 real dispatches the placeholder pushes total to 10 → 2 walls.
+
+### E.8 Newsstand search filter logic
+**Not implemented in prototype.** Search input on the wall is purely cosmetic. Spec §08's search is additive — debounce 200ms, filter across `title/excerpt/tags`, repaginate on filtered count.
+
+### E.9 Footer LET'S DO IT bobble
+**CSS-only, runs continuously** (see D.7). No JS handler in the prototype.
+
+### E.10 Footer "MIND THE GAP" click → contact modal
+**Not in prototype.** "MIND THE GAP" only appears in the marquee strings. Spec §09's footer line is fictional. Drop the requirement; the existing contact links (GITHUB / LINKEDIN / UT EMAIL / GMAIL) are the only contact affordances at the footer.
+
+### E.11 Top nav route change handlers
+From `app.js:25–33`:
+```js
+$$("[data-view]").forEach(el => {
+  el.addEventListener("click", e => {
+    e.preventDefault();
+    const v = el.dataset.view;
+    setView(v);
+    const s = el.dataset.scroll;
+    if (s) setTimeout(() => {
+      const t = document.getElementById(s);
+      if (t) t.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
+  });
+});
+
+function setView(v){
+  state.view = v;
+  $$(".view").forEach(el => el.classList.toggle("active", el.id === "view-" + v));
+  window.scrollTo(0, 0);
+  if (v === "admin") renderAdmin();
+}
+```
+- Nav uses `data-view="home|blog|admin"` to swap sections (the prototype is a single-page app).
+- `data-scroll="projects|contact"` triggers `scrollIntoView` after a 120ms delay (after view swap).
+- `data-open-about="1"` on the ABOUT nav link triggers the additional bind at `app.js:923` to open the bulletin modal.
+
+In production these become real Next.js routes (`/`, `/blog`, `/admin`) — the `data-view` swap and `setView()` go away, but the `scrollIntoView` smooth-scroll-with-delay pattern is preserved for hash links.
+
+### E.12 Admin form submit → API call → toast
+From `app.js:656` and `app.js:776`:
+```js
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  alert("(Prototype: would save this project. In production this POSTs to /api/admin/projects)");
+});
+```
+Prototype is no-op. Production replaces with `fetch('/api/projects', { method: 'POST', body: ... })` per `02-architecture.md` and shows a `<Toast>` per `10-admin.md`.
+
+### E.13 Admin brain-dump compose stream consumer
+**Not in prototype.** Spec §10 introduces this; preserve Phase 1 implementation per `02-architecture.md` §`POST /api/dispatches/compose`.
+
+### E.14 Ask-Claude submit
+**Not in prototype.** Spec §05 introduces this. Implement per spec.
+
+### E.15 Now-playing 30s polling
+**Not in prototype.** The "NOW PLAYING" widget shows a hardcoded `[ song · artist ]` placeholder. Spec §05's 30s polling against `/api/now-playing` is additive.
+
+### E.16 World-map pin hover label
+**Not in prototype.** All labels are pre-rendered as HTML `.wm-label` elements positioned by `left:Npx; top:Npx` percentages — they're always visible, no hover state. Drop the hover-reveal mechanism.
+
+### E.17 Carousel autoplay (additive contract pulled from app.js:329–376)
+- `IntersectionObserver({threshold:.3})` starts/stops autoplay when the plaque enters/leaves viewport.
+- `autoplay-bar` width fills 0% → 100% over the duration as a progress indicator.
+- User clicking arrow/dot sets `userStopped = true` for the rest of the session — autoplay does not resume after manual nav.
+
+### E.18 Tweaks panel
+**Out of scope** per `MASTER-SPEC.md`. Drop entirely.
+
+### E.19 Clock tick (arrivals board)
+From `app.js:14–16`:
+```js
+function tickClock(){
+  const c = $("#clock");
+  if (!c) return;
+  const d = new Date();
+  c.textContent = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
+tickClock();
+setInterval(tickClock, 30000);
+```
+24-hour `HH:MM`, ticks every 30 seconds. In production wrap in a client component with `useEffect` cleanup.
+
+### E.20 Stack toggle (plaque)
+From `app.js:379–380`:
+```js
+const st = wrap.querySelector(".stack-toggle");
+st.addEventListener("click", () => st.classList.toggle("open"));
+```
+Single `.open` class toggle; CSS `.stack-toggle.open + .stack-expanded { display: block; }` reveals the expanded reasons block. Chevron rotates 90° via `.stack-toggle.open .chev { transform: rotate(90deg); }`.
+
+### E.21 Carousel nav buttons (within plaque)
+From `app.js:360–362`:
+```js
+media.querySelectorAll("[data-nav]").forEach(btn => {
+  btn.addEventListener("click", e => {
+    e.stopPropagation();
+    userStopped = true;
+    go(idx + (btn.dataset.nav === "next" ? 1 : -1));
+  });
+});
+dots.forEach(d => d.addEventListener("click", e => {
+  e.stopPropagation();
+  userStopped = true;
+  go(+d.dataset.i);
+}));
+```
+- `e.stopPropagation()` prevents the lightbox from opening when clicking nav arrows or dots.
+- `go(i)` modulos: `idx = (i + total) % total`.
+
+### E.22 Resize redraws metro line
+From `app.js:284–285`:
+```js
+window.addEventListener("resize", () => {
+  clearTimeout(window._drawT);
+  window._drawT = setTimeout(drawMetroLine, 120);
+});
+window.addEventListener("load", () => setTimeout(drawMetroLine, 100));
+```
+- Debounce 120ms.
+- Initial draw fires 100ms after load (after layout settles).
 
 ## §F · Asset extraction
 
