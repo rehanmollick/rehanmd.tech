@@ -1,8 +1,21 @@
 import { NextResponse } from "next/server";
 import { getAboutConfig } from "@/lib/about";
 import { complete } from "@/lib/llm";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
+  // Public endpoint — bucket by client IP (best-effort) to keep the limit
+  // enforced even for anonymous bulletin visitors. Behind Vercel the
+  // forwarded-for header is trusted; locally it falls back to "anonymous".
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "anonymous";
+  const rl = await checkRateLimit(`ask:${ip}`);
+  if (!rl.allowed) {
+    return NextResponse.json(rateLimitResponse(rl), { status: 429 });
+  }
+
   const body = (await req.json()) as { question?: string };
   const q = (body.question || "").trim();
   if (!q) return NextResponse.json({ error: "Empty question" }, { status: 400 });
