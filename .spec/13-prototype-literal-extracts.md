@@ -1424,14 +1424,54 @@ window.addEventListener("load", () => setTimeout(drawMetroLine, 100));
 
 ## §F · Asset extraction
 
-Open `prototype/index.html` and `app.js` and list EVERY asset reference (`url(...)`, `src=`, `<img>`, fetch URLs). For each:
+Every asset reference in the prototype, mapped to its real-app destination.
 
-```
-TODO(spec): produce a table:
-  | Reference path in prototype | Type (img/video/json/css) | Real-app destination | Source (copy / generate / user-provide) |
-```
+| Reference in prototype | Type | Real-app destination | Source |
+|---|---|---|---|
+| `https://fonts.googleapis.com/css2?family=VT323&family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Special+Elite&display=swap` | font CSS | `next/font/google` loaders in `app/layout.tsx` (NO `<link>`) | replace |
+| `<svg viewBox="0 0 184 100">` `wall-map` mini-map decoration (`index.html:1273–1285`) | inline SVG | inline in `<NewsstandWall />` (decorative; no extraction) | inline |
+| `<svg class="wm-svg" viewBox="0 0 1000 500">` `wm-land` `<g>` (`index.html:1518`, ~71KB of path data) | inline SVG land paths | extract verbatim into `public/data/world-land.svg` and `<use>` it OR inline as a const string in `BulletinWorldMap.tsx` | copy |
+| `<svg>` GitHub icon inline (`app.js:318`) | inline SVG path | inline as React component `<GithubIcon />` in `components/icons/` | copy |
+| `${slide.url}` for plaque carousel `background-image:url(...)` (`app.js:308`) | image URL (per-project) | `public/projects/${id}/...` OR Vercel Blob URL — see project's `slides[]` in `data/projects.ts` | per-project upload |
+| `${slide.url}` for lightbox `background-image:url(...)` (`app.js:395`) | same | same | same |
+| `${project.liveUrl}` (`app.js:317`) | external URL | as-is from `projects.ts` | data |
+| `${project.repoUrl}` (`app.js:318`) | external URL | as-is from `projects.ts` | data |
+| `<a href="#">` footer links (`index.html:1359–1362`) | TBD external URLs | replace with the real hrefs from §C.9 (`https://github.com/rehanmollick`, `https://www.linkedin.com/in/rehanmollick`, `mailto:rehanmollick07@utexas.edu`, `mailto:rehanmollick07@gmail.com`) | hardcode |
+| `<a href="#" data-view="...">` nav links (`index.html:1188–1196`) | route link (prototype SPA) | real Next.js routes: `Link to:` `/`, `/blog`, `#projects`, `#contact` | replace |
+| `<script src="./data.js?v=11">` and `<script src="./app.js?v=11">` (`index.html:1694–1695`) | reference scripts | replaced by Next.js build; data lives at `src/data/projects.ts`, content lives at `src/content/blog/*.mdx` | replace |
+| `<filter id="wm-pinglow">` SVG filter (`index.html:1496–1498`) | inline SVG filter def | inline in `BulletinWorldMap.tsx` | copy |
+| `<pattern id="wm-grid">` SVG pattern (`index.html:1493–1495`) | inline SVG pattern def | inline in `BulletinWorldMap.tsx` | copy |
+| `<filter id="rough">` SVG filter referenced by `app.js:902–903` | inline SVG filter (referenced but NOT defined in the inline SVG — likely dead code) | drop / verify | drop |
+| `var(--font-serif)`, `var(--font-pixel)`, `var(--mono)` etc | CSS vars | declared in `globals.css` per §B | copy |
 
-Then bundle every concrete asset into `.spec/assets/` and document the destination `public/` path.
+### Files to bundle into `public/`
+
+Per `11-asset-manifest.md` (with §B reconciliation):
+
+| Source file | Destination | Notes |
+|---|---|---|
+| `.spec/assets/geo/land-110m.json` | `public/data/land-110m.json` | World map TopoJSON (110m resolution). UNUSED if we go with the prototype's hand-drawn SVG, but keep for the additive "real Equal-Earth" option in `05-about-bulletin.md`. |
+| `.spec/assets/textures/paper-noise.png` | `public/textures/paper-noise.png` | Paper texture overlay for bulletin + newspaper. Used at `opacity:.06` over cream paper. |
+| `.spec/assets/textures/cork-tile.jpg` | `public/textures/cork-tile.jpg` | Cork-board texture for `/blog` newsstand wall. |
+| `.spec/assets/prototype/index.html` | `docs/prototype/index.html` | Reference only. Add `docs/` to `.gitignore` if not already. |
+| `.spec/assets/prototype/app.js` | `docs/prototype/app.js` | Reference only. |
+| `.spec/assets/prototype/data.js` | `docs/prototype/data.js` | Reference only — used as seed for `src/data/projects.ts`. |
+| `.spec/assets/screenshots/*.png` | `docs/spec-screenshots/*.png` | Reference for visual diff during build. Excluded from production bundle. |
+
+### Assets the prototype assumes the user will provide
+
+| Asset | Where used | Status |
+|---|---|---|
+| Per-project hero/screenshot images for `slides[].url` | Plaque carousel + lightbox | NONE shipped — every `data.js` slide is a `placeholder` with a label. Production: admin uploads via Media Library; URLs fill in `src/data/projects.ts`. |
+| About photo strip images (4 tiles) | `.ap-photos` in bulletin | NONE shipped — placeholder striped tiles. Admin uploads via `/admin/about`. |
+| About now-playing album art | `.ap-widget ♫ NOW PLAYING` | NONE shipped — placeholder. Comes from Spotify API (optional) or KV (manual). |
+| Resume PDF (`/resume.pdf`) | Footer `RESUME ⇣` link in spec §09 | Spec wants it; **prototype does not link to a resume**. Per §13 prototype wins → drop the RESUME button. |
+| Open Graph / Twitter card image | `<meta property="og:image">` in `app/layout.tsx` | NONE shipped; user-provide later (or generate at build). |
+| Favicon | `app/icon.png` or similar | Existing repo has one; preserve. |
+
+### Inline SVG to externalize
+
+The hand-drawn world-map land-paths are ~71KB of inline SVG. Recommend externalizing them to `public/data/world-land.svg` (or `.json`) and fetching at modal-open time, OR embedding as a frozen string constant in `BulletinWorldMap.tsx`. Embedding inflates the page bundle by ~70KB; fetching adds one network request. Recommend **embedding** since the bulletin is the only consumer and lazy-loading the modal is already a goal.
 
 ## §G · DOM / CSS class names to preserve
 
