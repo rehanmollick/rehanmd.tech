@@ -59,6 +59,7 @@ export function getPostBySlug(slug: string): BlogPost | null {
     date: data.date || "1970-01-01",
     tags: data.tags || [],
     excerpt: data.excerpt || "",
+    readTime: typeof data.readTime === "number" ? data.readTime : 2,
     content,
   };
 }
