@@ -68,17 +68,16 @@ export default function EnvelopePoster({ onOpen }: Props) {
       <div
         className="font-pixel"
         style={{
-          fontSize: "clamp(32px,5.4vw,48px)",
-          lineHeight: 1.05,
+          fontSize: "clamp(20px, 4.2vw, 30px)",
+          lineHeight: 1.15,
           color: "#1a0f05",
           textAlign: "center",
           margin: "18px 0 14px",
           letterSpacing: "0.02em",
           textShadow: "2px 2px 0 rgba(191,87,0,.35)",
-          whiteSpace: "nowrap",
         }}
       >
-        WHO&nbsp;IS&nbsp;THIS&nbsp;GUY?
+        WHO IS THIS GUY?
       </div>
 
       <div
