@@ -288,12 +288,102 @@ export const DEFAULT_ABOUT = {
 After extraction, this section should contain:
 
 ```css
-:root {
-  /* TODO(spec): paste the entire :root block from prototype/index.html lines X-Y */
+/* From prototype/index.html lines 11–32 — copy verbatim into src/app/globals.css */
+:root{
+  --bg-primary:#0a0a0a;
+  --bg-secondary:#131313;
+  --bg-tertiary:#1d1d1d;
+  --accent:#BF5700;         /* UT burnt orange */
+  --accent-light:#E07A2E;
+  --accent-dim:#6b3100;
+  --accent-deep:#4a2100;
+  --text-primary:#e8e3da;
+  --text-secondary:#c0b9ac;
+  --text-muted:#7a7265;
+  --brick-a:#2a1a10;
+  --brick-b:#3b2416;
+  --brick-mortar:#1a110a;
+  --amber:#ffb43a;
+  --lamp:#ffc269;
+  --mono:"JetBrains Mono","IBM Plex Mono",ui-monospace,monospace;
+  --pixel:"VT323",monospace;
+  --serif:"Source Serif 4","Playfair Display",Georgia,serif;
+  --display:"Playfair Display",Georgia,serif;
+  --type:"Special Elite","Courier New",monospace;
+}
+
+/* Body bg from line 34 — note the OUTER body bg is darker than --bg-primary */
+html,body{ background:#050505; color:var(--text-primary); font-family:var(--mono); overflow-x:hidden; }
+::selection{ background:var(--accent); color:#000; }
+```
+
+**Conflicts vs `01-design-system.md` — prototype wins:**
+
+| Token | Spec `01-design-system.md` | Prototype `:root` | Use |
+|---|---|---|---|
+| `--bg-secondary` | `#111111` | `#131313` | `#131313` |
+| `--bg-tertiary`  | `#1a1a1a` | `#1d1d1d` | `#1d1d1d` |
+| `--accent-light` | `#E87A2E` | `#E07A2E` | `#E07A2E` |
+| `--accent-dim`   | `#8B3F00` | `#6b3100` | `#6b3100` |
+| `--text-primary` | `#f5f5f5` | `#e8e3da` | `#e8e3da` |
+| `--text-secondary` | `#a1a1a1` | `#c0b9ac` | `#c0b9ac` |
+| `--text-muted`   | `#666666` | `#7a7265` | `#7a7265` |
+| `--tunnel-light` | `#FFB366` | not defined; equivalent token is `--lamp:#ffc269` | use `--lamp` |
+| `--accent-glow`  | `#FF6B1A` | not defined as a CSS var; only used in `text-shadow` | introduce `--accent-glow:#ff8c32` to satisfy spec footer text-shadow requirement, but mark as "additive" |
+| Page outer bg    | `#0a0a0a` | `#050505` (darker than `--bg-primary`) | the `<body>` and section bg use `#050505`; `--bg-primary:#0a0a0a` is reserved for cards/admin shell only |
+
+**Tokens the prototype does NOT define but the spec calls for** — add them as additive tokens in `globals.css`, named so they don't collide with the prototype's set:
+
+```css
+/* additive — required by spec sections that the prototype renders without explicit tokens */
+:root{
+  /* bulletin paper palette — pulled from inline hex in .about-poster, .ap-* */
+  --paper:#f4e8c8;
+  --paper-2:#e9d9a8;             /* gradient mid-stop */
+  --paper-3:#d8c186;             /* gradient bottom */
+  --paper-dark:#1a0f05;
+  --paper-text:#2a1a08;
+  --paper-eyebrow:#7a3a05;
+  --paper-rule:rgba(80,50,20,.25);
+  --bulletin-stamp-red:#9a1a1a;
+  --bulletin-amber:#ffb43a;
+
+  /* newspaper palette — pulled from .reader inline hex */
+  --news-paper:#f7f1dc;
+  --news-paper-bg:#f2ecd8;
+  --news-rule:#6a5a38;
+  --news-text:#1a1408;
+
+  /* dispatch tape / cork */
+  --tape-amber:#ffd866;     /* spec value; prototype tape uses rgba(255,230,160,.75) */
+  --cork-warm-1:#2a1a10;    /* matches --brick-a */
+
+  /* page outer background — the body uses this in the prototype, NOT --bg-primary */
+  --page-outer:#050505;
+
+  /* glow tone for accents (spec calls for --accent-glow) */
+  --accent-glow:#ff8c32;
 }
 ```
 
-The `01-design-system.md` token table is a *summary*; the literal `:root` block is the *contract*. If they disagree, this file wins.
+The `01-design-system.md` token table is a *summary*; the literal `:root` block above is the *contract*. If they disagree, this file wins.
+
+### §B.1 · Font loading (prototype) vs production (next/font)
+
+The prototype loads via Google Fonts CSS at `index.html:9`:
+```
+VT323 + JetBrains Mono [400;500;600;700] + IBM Plex Mono [400;500;600;700]
++ Playfair Display [italic+normal: 600,700,900; italic 600]
++ Source Serif 4 [italic+normal: 400,600; italic 400]
++ Special Elite
+```
+
+Production must load via `next/font/google` in `app/layout.tsx`. Per `11-asset-manifest.md` the spec swaps in:
+- `Press Start 2P` → maps to prototype's `--font-pixel` slot. **CONFLICT:** prototype uses `VT323`, not Press Start 2P. Press Start 2P is a more "rigid" 8-bit pixel face; VT323 is a CRT-terminal monospace. The screenshots clearly show VT323 (round bowls, single-stroke). **Use VT323**, not Press Start 2P, to match the prototype. Update `11-asset-manifest.md` accordingly.
+- Keep `JetBrains Mono` for `--font-mono` (matches prototype primary mono).
+- Keep `Playfair Display` for `--font-serif`.
+- Keep `Source Serif 4` for `--font-body-serif`.
+- Add `Special Elite` for `--font-type` (used by `.dispatch` cards on the cork wall).
 
 ## §C · Section copy — extract literal HTML
 
