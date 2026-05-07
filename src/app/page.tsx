@@ -5,7 +5,9 @@ import Marquee from "@/components/hero/Marquee";
 import ScrollCue from "@/components/hero/ScrollCue";
 import AboutSection from "@/components/about/AboutSection";
 import DispatchesSection from "@/components/dispatches/DispatchesSection";
+import LineSection from "@/components/line/LineSection";
 import { getAllPosts } from "@/lib/mdx";
+import { projects } from "@/data/projects";
 
 // Page composition follows .spec/03-train-scene-rules.md:
 // - <div className="train-stage"> is sticky at the top of the viewport.
@@ -37,7 +39,8 @@ export default function Home() {
       >
         <AboutSection />
         <DispatchesSection posts={posts} />
-        {/* Remaining Phase B sections (line, footer) land here */}
+        <LineSection projects={projects} />
+        {/* Remaining Phase B5 (footer) lands here */}
       </main>
     </>
   );
