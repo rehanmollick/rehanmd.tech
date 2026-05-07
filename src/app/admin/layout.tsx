@@ -8,6 +8,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { ReactNode } from "react";
+import ToastHost from "@/components/admin/Toast";
 
 interface NavItem {
   href: string;
@@ -171,6 +172,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           {children}
         </main>
       </div>
+      <ToastHost />
     </div>
   );
 }

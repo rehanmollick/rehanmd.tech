@@ -1,20 +1,109 @@
 "use client";
 
-// Project edit form — visual layout from prototype/app.js:529–630.
-// Save logic is Phase D2 (post-PR follow-up); for now the form alerts on
-// submit so authors can preview the layout while the API is wired.
+// Project edit form. Save flow: validate + POST/PUT to /api/admin/projects;
+// on success, /api/admin/projects writes src/data/projects.ts back to GitHub
+// via Octokit and revalidates the affected paths.
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Project } from "@/data/projects";
+import { showToast } from "./Toast";
 
 interface Props {
   project?: Project;
 }
 
 export default function ProjectForm({ project }: Props) {
+  const router = useRouter();
   const isEdit = Boolean(project?.id);
+  const [busy, setBusy] = useState(false);
   const [title, setTitle] = useState(project?.title ?? "");
   const [stationName, setStationName] = useState(project?.stationName ?? "");
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    const fd = new FormData(e.currentTarget);
+    const techNames = fd.getAll("techName").map((v) => String(v));
+    const techReasons = fd.getAll("techReason").map((v) => String(v));
+    const techStack = techNames
+      .map((name, i) => ({ name: name.trim(), reason: (techReasons[i] || "").trim() }))
+      .filter((t) => t.name);
+
+    const payload = {
+      id: String(fd.get("id") || project?.id || "").trim() || undefined,
+      title: String(fd.get("title") || "").trim(),
+      date: String(fd.get("date") || "").trim(),
+      dateDisplay: String(fd.get("dateDisplay") || "").trim(),
+      stationName: String(fd.get("stationName") || "").trim(),
+      description: String(fd.get("description") || "").trim(),
+      context: String(fd.get("context") || "").trim() || null,
+      repoUrl: String(fd.get("repoUrl") || "").trim() || null,
+      liveUrl: String(fd.get("liveUrl") || "").trim() || null,
+      tags: String(fd.get("tags") || "")
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
+      featured: fd.get("featured") === "on",
+      techStack,
+      slides: project?.slides ?? [],
+    };
+
+    try {
+      const url = isEdit
+        ? `/api/admin/projects/${project!.id}`
+        : "/api/admin/projects";
+      const r = await fetch(url, {
+        method: isEdit ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        showToast(data.error || "Save failed", "error");
+        return;
+      }
+      const sha = (data.commitSha || "").slice(0, 7);
+      showToast(
+        isEdit
+          ? `Saved · ${data.project?.title} · ${sha}`
+          : `Added to line · ${data.project?.title} · ${sha}`,
+      );
+      router.push("/admin/projects");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      showToast("Network error", "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!isEdit || !project) return;
+    if (!confirm(`Delete "${project.title}" from The Line?`)) return;
+    setBusy(true);
+    try {
+      const r = await fetch(`/api/admin/projects/${project.id}`, {
+        method: "DELETE",
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        showToast(data.error || "Delete failed", "error");
+        return;
+      }
+      const sha = (data.commitSha || "").slice(0, 7);
+      showToast(`Deleted · ${project.title} · ${sha}`);
+      router.push("/admin/projects");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      showToast("Network error", "error");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div>
@@ -47,12 +136,7 @@ export default function ProjectForm({ project }: Props) {
 
       <form
         className="admin-form"
-        onSubmit={(e) => {
-          e.preventDefault();
-          alert(
-            "(Prototype: would save this project. Wiring lands in Phase D2.)",
-          );
-        }}
+        onSubmit={handleSubmit}
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 360px",
@@ -74,6 +158,7 @@ export default function ProjectForm({ project }: Props) {
             placeholder="e.g. GridPulse"
             value={title}
             onChange={setTitle}
+            name="title"
           />
 
           <div className="field-row" style={fieldRow()}>
@@ -83,12 +168,14 @@ export default function ProjectForm({ project }: Props) {
               type="date"
               defaultValue={project?.date?.substring(0, 10) ?? ""}
               hint="Used for sorting on the line (newest at top)"
+              name="date"
             />
             <Field
               label="Date display"
               optional="auto if blank"
               defaultValue={project?.dateDisplay ?? ""}
               placeholder="e.g. January 2026"
+              name="dateDisplay"
             />
           </div>
 
@@ -98,6 +185,7 @@ export default function ProjectForm({ project }: Props) {
             value={stationName}
             onChange={setStationName}
             placeholder="e.g. GridPulse Station · defaults to project title"
+            name="stationName"
           />
 
           <Field
@@ -106,6 +194,7 @@ export default function ProjectForm({ project }: Props) {
             textarea
             defaultValue={project?.description ?? ""}
             placeholder="What does it do? Who's it for? Why build it?"
+            name="description"
           />
 
           <Field
@@ -113,6 +202,7 @@ export default function ProjectForm({ project }: Props) {
             optional="optional · hackathon, internship, client, award"
             defaultValue={project?.context ?? ""}
             placeholder="e.g. HackTAMU 2026"
+            name="context"
           />
 
           <div className="field-row" style={fieldRow()}>
@@ -121,12 +211,14 @@ export default function ProjectForm({ project }: Props) {
               optional="optional"
               defaultValue={project?.repoUrl ?? ""}
               placeholder="https://github.com/…"
+              name="repoUrl"
             />
             <Field
               label="Live URL"
               optional="optional"
               defaultValue={project?.liveUrl ?? ""}
               placeholder="https://…"
+              name="liveUrl"
             />
           </div>
 
@@ -145,6 +237,24 @@ export default function ProjectForm({ project }: Props) {
             </div>
             <button
               type="button"
+              id="add-tech"
+              onClick={() => {
+                const builder = document.querySelector(".tech-builder");
+                if (!builder) return;
+                const wrap = document.createElement("div");
+                wrap.className = "tech-row";
+                wrap.style.cssText =
+                  "display:grid; grid-template-columns:150px 1fr 36px; gap:8px; align-items:start;";
+                wrap.innerHTML = `
+                  <input name="techName" placeholder="Name (e.g. Next.js)" style="width:100%; background:var(--page-outer); border:1px solid #2a2a2a; padding:8px 10px; font-family:var(--font-mono),monospace; font-size:13px; color:var(--text-primary)" />
+                  <textarea name="techReason" placeholder="Why this tech?" style="width:100%; background:var(--page-outer); border:1px solid #2a2a2a; padding:8px 10px; font-family:var(--font-mono),monospace; font-size:12px; color:var(--text-primary); min-height:60px; resize:vertical; line-height:1.5"></textarea>
+                  <button type="button" data-rm style="width:36px; height:36px; border:1px solid #4a1010; color:#ff6a50; display:flex; align-items:center; justify-content:center; font-size:16px; background:transparent; cursor:pointer;">✕</button>
+                `;
+                wrap
+                  .querySelector("[data-rm]")
+                  ?.addEventListener("click", () => wrap.remove());
+                builder.appendChild(wrap);
+              }}
               className="btn font-mono"
               style={{
                 marginTop: 8,
@@ -155,6 +265,7 @@ export default function ProjectForm({ project }: Props) {
                 background: "transparent",
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
+                cursor: "pointer",
               }}
             >
               ＋ Add tech
@@ -166,6 +277,7 @@ export default function ProjectForm({ project }: Props) {
             optional="optional · comma separated"
             defaultValue={project?.tags?.join(", ") ?? ""}
             placeholder="ai, hackathon, web3…"
+            name="tags"
           />
         </div>
 
@@ -226,7 +338,11 @@ export default function ProjectForm({ project }: Props) {
           </FormCard>
 
           <FormCard title="▸ Visibility">
-            <SwitchRow defaultChecked={project?.featured} label="Featured on line" />
+            <SwitchRow
+              defaultChecked={project?.featured}
+              label="Featured on line"
+              name="featured"
+            />
             <SwitchRow defaultChecked label="Published" />
             <p
               className="font-mono"
@@ -284,16 +400,35 @@ export default function ProjectForm({ project }: Props) {
             gridColumn: "1 / -1",
           }}
         >
-          <button type="button" className="btn font-mono" style={ghostBtn()}>
+          <button
+            type="button"
+            className="btn font-mono"
+            style={ghostBtn()}
+            onClick={() => router.push("/admin/projects")}
+            disabled={busy}
+          >
             Cancel
           </button>
           {isEdit && (
-            <button type="button" className="btn danger font-mono" style={dangerBtn()}>
+            <button
+              type="button"
+              className="btn danger font-mono"
+              style={dangerBtn()}
+              onClick={handleDelete}
+              disabled={busy}
+            >
               Delete station
             </button>
           )}
-          <button type="submit" className="btn primary font-mono" style={primaryBtn()}>
-            ▸ {isEdit ? "Save changes" : "Add to line"}
+          <button
+            type="submit"
+            className="btn primary font-mono"
+            style={primaryBtn()}
+            disabled={busy}
+          >
+            {busy
+              ? "▸ COMMITTING…"
+              : `▸ ${isEdit ? "Save changes" : "Add to line"}`}
           </button>
         </div>
       </form>
@@ -321,6 +456,7 @@ function Field({
   defaultValue,
   value,
   onChange,
+  name,
 }: {
   label: string;
   required?: boolean;
@@ -332,6 +468,7 @@ function Field({
   defaultValue?: string;
   value?: string;
   onChange?: (v: string) => void;
+  name?: string;
 }) {
   return (
     <div className="field" style={{ marginBottom: 16 }}>
@@ -342,6 +479,7 @@ function Field({
       </Label>
       {textarea ? (
         <textarea
+          name={name}
           required={required}
           placeholder={placeholder}
           defaultValue={defaultValue}
@@ -351,6 +489,7 @@ function Field({
       ) : (
         <input
           type={type}
+          name={name}
           required={required}
           placeholder={placeholder}
           defaultValue={defaultValue}
@@ -462,11 +601,13 @@ function TechRow({ name, reason }: { name: string; reason: string }) {
       }}
     >
       <input
+        name="techName"
         placeholder="Name (e.g. Next.js)"
         defaultValue={name}
         style={{ ...inputStyle(), padding: "8px 10px" }}
       />
       <textarea
+        name="techReason"
         placeholder="Why this tech?"
         defaultValue={reason}
         style={{
@@ -479,6 +620,9 @@ function TechRow({ name, reason }: { name: string; reason: string }) {
       <button
         type="button"
         className="remove"
+        onClick={(e) => {
+          e.currentTarget.closest(".tech-row")?.remove();
+        }}
         style={{
           width: 36,
           height: 36,
@@ -500,9 +644,11 @@ function TechRow({ name, reason }: { name: string; reason: string }) {
 function SwitchRow({
   label,
   defaultChecked,
+  name,
 }: {
   label: string;
   defaultChecked?: boolean;
+  name?: string;
 }) {
   return (
     <label
@@ -522,6 +668,7 @@ function SwitchRow({
     >
       <input
         type="checkbox"
+        name={name}
         defaultChecked={defaultChecked}
         style={{ display: "none" }}
       />
