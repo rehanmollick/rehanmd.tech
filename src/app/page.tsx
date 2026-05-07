@@ -6,6 +6,7 @@ import ScrollCue from "@/components/hero/ScrollCue";
 import AboutSection from "@/components/about/AboutSection";
 import DispatchesSection from "@/components/dispatches/DispatchesSection";
 import LineSection from "@/components/line/LineSection";
+import Footer from "@/components/layout/Footer";
 import { getAllPosts } from "@/lib/mdx";
 import { projects } from "@/data/projects";
 
@@ -40,7 +41,7 @@ export default function Home() {
         <AboutSection />
         <DispatchesSection posts={posts} />
         <LineSection projects={projects} />
-        {/* Remaining Phase B5 (footer) lands here */}
+        <Footer />
       </main>
     </>
   );
