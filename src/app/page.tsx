@@ -1,7 +1,5 @@
 import Nav from "@/components/layout/Nav";
 import HeroScene from "@/components/three/HeroScene";
-import HeroPanel from "@/components/hero/HeroPanel";
-import Marquee from "@/components/hero/Marquee";
 import ScrollCue from "@/components/hero/ScrollCue";
 import AboutSection from "@/components/about/AboutSection";
 import DispatchesSection from "@/components/dispatches/DispatchesSection";
@@ -29,8 +27,6 @@ export default function Home() {
         style={{ position: "sticky", top: 0, height: "100vh", zIndex: 0 }}
       >
         <HeroScene />
-        <Marquee />
-        <HeroPanel />
         <ScrollCue />
       </div>
 
