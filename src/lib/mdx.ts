@@ -1,8 +1,16 @@
+// Dispatch (blog) content lives in per-folder MDX files at:
+//
+//   public/dispatches/<slug>/dispatch.mdx     (frontmatter + MDX body)
+//   public/dispatches/<slug>/<image files>    (optional, referenced from MDX body)
+//
+// To add a dispatch: create `public/dispatches/<slug>/dispatch.mdx`, drop
+// any inline images alongside, commit. No build step, no admin.
+
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 
-const BLOG_DIR = path.join(process.cwd(), "src/content/blog");
+const DISPATCHES_DIR = path.join(process.cwd(), "public/dispatches");
 
 export interface BlogPostMeta {
   slug: string;
@@ -14,62 +22,61 @@ export interface BlogPostMeta {
 }
 
 export interface BlogPost extends BlogPostMeta {
-  content: string; // Raw MDX content (without frontmatter)
+  content: string;
 }
 
-/** Get all blog post metadata, sorted by date (newest first) */
-export function getAllPosts(): BlogPostMeta[] {
-  if (!fs.existsSync(BLOG_DIR)) return [];
-
-  const files = fs.readdirSync(BLOG_DIR).filter((f) => f.endsWith(".mdx"));
-
-  const posts = files.map((filename) => {
-    const slug = filename.replace(/\.mdx$/, "");
-    const filePath = path.join(BLOG_DIR, filename);
-    const fileContents = fs.readFileSync(filePath, "utf8");
-    const { data } = matter(fileContents);
-
-    return {
-      slug,
-      title: data.title || slug,
-      date: data.date || "1970-01-01",
-      tags: data.tags || [],
-      excerpt: data.excerpt || "",
-      readTime: typeof data.readTime === "number" ? data.readTime : 2,
-    };
-  });
-
-  return posts.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
-}
-
-/** Get a single blog post by slug */
-export function getPostBySlug(slug: string): BlogPost | null {
-  const filePath = path.join(BLOG_DIR, `${slug}.mdx`);
-
-  if (!fs.existsSync(filePath)) return null;
-
-  const fileContents = fs.readFileSync(filePath, "utf8");
-  const { data, content } = matter(fileContents);
-
+function metaFromFrontmatter(slug: string, data: Record<string, unknown>): BlogPostMeta {
+  const dateStr =
+    data.date instanceof Date
+      ? data.date.toISOString().slice(0, 10)
+      : String(data.date || "1970-01-01");
   return {
     slug,
-    title: data.title || slug,
-    date: data.date || "1970-01-01",
-    tags: data.tags || [],
-    excerpt: data.excerpt || "",
+    title: String(data.title || slug),
+    date: dateStr,
+    tags: (data.tags as string[]) || [],
+    excerpt: String(data.excerpt || ""),
     readTime: typeof data.readTime === "number" ? data.readTime : 2,
-    content,
   };
 }
 
-/** Get all slugs for static generation */
-export function getAllSlugs(): string[] {
-  if (!fs.existsSync(BLOG_DIR)) return [];
+/** All dispatch metadata, sorted newest-first. */
+export function getAllPosts(): BlogPostMeta[] {
+  if (!fs.existsSync(DISPATCHES_DIR)) return [];
+  const slugs = fs
+    .readdirSync(DISPATCHES_DIR, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name);
 
+  const posts = slugs
+    .map((slug) => {
+      const filePath = path.join(DISPATCHES_DIR, slug, "dispatch.mdx");
+      if (!fs.existsSync(filePath)) return null;
+      const raw = fs.readFileSync(filePath, "utf8");
+      const { data } = matter(raw);
+      return metaFromFrontmatter(slug, data);
+    })
+    .filter((p): p is BlogPostMeta => p !== null);
+
+  return posts.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+}
+
+/** Single dispatch (frontmatter + MDX body). */
+export function getPostBySlug(slug: string): BlogPost | null {
+  const filePath = path.join(DISPATCHES_DIR, slug, "dispatch.mdx");
+  if (!fs.existsSync(filePath)) return null;
+  const raw = fs.readFileSync(filePath, "utf8");
+  const { data, content } = matter(raw);
+  return { ...metaFromFrontmatter(slug, data), content };
+}
+
+/** Slugs for generateStaticParams. */
+export function getAllSlugs(): string[] {
+  if (!fs.existsSync(DISPATCHES_DIR)) return [];
   return fs
-    .readdirSync(BLOG_DIR)
-    .filter((f) => f.endsWith(".mdx"))
-    .map((f) => f.replace(/\.mdx$/, ""));
+    .readdirSync(DISPATCHES_DIR, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name);
 }
