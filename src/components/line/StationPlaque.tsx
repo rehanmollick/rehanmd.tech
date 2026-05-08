@@ -110,18 +110,32 @@ export default function StationPlaque({
             {project.title}
           </h3>
 
-          {/* Context (optional) */}
+          {/* Context badge (optional) — emphasized so accolades / hackathon
+              wins / demo affiliations don't get lost in the body copy. */}
           {project.context && (
             <div
               className="plaque-ctx font-mono"
               style={{
-                fontSize: 11,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                marginTop: 12,
+                padding: "6px 12px",
+                fontSize: 12,
+                fontWeight: 700,
                 color: "var(--accent-light)",
-                marginTop: 10,
-                letterSpacing: "0.1em",
+                background: "rgba(191,87,0,.12)",
+                border: "1px solid var(--accent-dim)",
+                borderLeft: "3px solid var(--accent)",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                textShadow: "0 0 8px rgba(255,140,50,.4)",
               }}
             >
-              ▸ {project.context}
+              <span aria-hidden style={{ color: "var(--accent)" }}>
+                ▸
+              </span>
+              {project.context}
             </div>
           )}
 
