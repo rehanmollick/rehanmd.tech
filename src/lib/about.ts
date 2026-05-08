@@ -1,15 +1,12 @@
 /**
- * About bulletin config — public data + KV-backed admin overrides.
+ * About bulletin config — content for the About modal.
  *
- * Source of truth for the literal default values:
- * .spec/13-prototype-literal-extracts.md §A.4
- * (extracted verbatim from prototype/index.html lines 1405–1645).
+ * In a future PR (D2-19) this will be loaded from public/about/about.md
+ * frontmatter. For now it stays inline so the migration is a focused step.
  *
- * Pin coordinates use the prototype's hand-drawn SVG world map space
- * (viewBox 0 0 1000 500) — see BulletinWorldMap.tsx. Lat/lng is optional
- * admin convenience.
+ * Source of literal copy: .spec/13-prototype-literal-extracts.md §A.4.
+ * Pin coordinates use the hand-drawn SVG world map's viewBox (0 0 1000 500).
  */
-import { kv } from "@vercel/kv";
 
 export type PinAnchor = "t" | "b" | "l" | "r";
 
@@ -109,12 +106,7 @@ export interface AboutConfig {
   header: AboutHeader;
   hometown: { name: string; svgX: number; svgY: number };
   links: AboutLink[];
-
-  // System prompt for /api/ask-claude — kept private to the bulletin's "Ask Claude" widget.
-  bioPrompt: string;
 }
-
-const KV_KEY = "about:config";
 
 export const DEFAULT_ABOUT: AboutConfig = {
   eyebrow: "PASSENGER PROFILE",
@@ -249,26 +241,8 @@ export const DEFAULT_ABOUT: AboutConfig = {
   hometown: { name: "Austin, TX", svgX: 229, svgY: 166 },
 
   links: [],
-
-  bioPrompt:
-    "You are answering on behalf of Md Rehan Mollick (Rehan), a CS student at UT Austin. He builds at hackathons, ships side projects, and works in full-stack web, blockchain, and AI tooling. He's from Bangladesh originally, lived in Tokyo, NYC, Michigan, Tampa, Kansas, and Dallas before settling in Austin. He climbs, swims, and likes optimizing things that don't need optimizing. Be friendly, concise, and a little dry.",
 };
 
 export async function getAboutConfig(): Promise<AboutConfig> {
-  try {
-    const stored = await kv.get<Partial<AboutConfig>>(KV_KEY);
-    if (!stored) return DEFAULT_ABOUT;
-    return { ...DEFAULT_ABOUT, ...stored };
-  } catch {
-    return DEFAULT_ABOUT;
-  }
-}
-
-export async function setAboutConfig(
-  next: Partial<AboutConfig>,
-): Promise<AboutConfig> {
-  const current = await getAboutConfig();
-  const merged = { ...current, ...next };
-  await kv.set(KV_KEY, merged);
-  return merged;
+  return DEFAULT_ABOUT;
 }
