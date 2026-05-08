@@ -18,7 +18,11 @@ export default function Terminus({ variant, label, sub }: Props) {
         alignItems: "center",
         gap: 14,
         justifyContent: "center",
-        padding: "20px 0",
+        // Extra bottom space on the upcoming terminus so the first 45° jog
+        // gets vertical headroom and doesn't smash into the first station's
+        // sign at a steep angle.
+        padding:
+          variant === "upcoming" ? "20px 0 90px" : "90px 0 20px",
         position: "relative",
         zIndex: 3,
       }}
