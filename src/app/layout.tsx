@@ -7,7 +7,6 @@ import {
   Special_Elite,
 } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import SessionProviderClient from "@/components/providers/SessionProviderClient";
 import "@/styles/globals.css";
 
 // Pixel display face — used for hero h1, section h2, plaque title, footer LET'S DO IT,
@@ -87,7 +86,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={fontVars}>
       <body>
-        <SessionProviderClient>{children}</SessionProviderClient>
+        {children}
         <Analytics />
       </body>
     </html>
