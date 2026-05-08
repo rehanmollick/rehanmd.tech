@@ -5,11 +5,14 @@ import Link from "next/link";
 
 // Hrefs are absolute (`/#anchor`) so anchor jumps work from any route —
 // e.g. clicking ABOUT from /blog navigates back to / and scrolls to #about.
+// BLOG points at the homepage's #dispatches section rather than the /blog
+// route — the route still exists for direct links and the dispatch reader's
+// back-link, but the nav scrolls to where the wall already lives on /.
 const navLinks = [
   { href: "/#about", label: "About" },
   { href: "/#projects", label: "Projects" },
   { href: "/#contact", label: "Contact" },
-  { href: "/blog", label: "Blog" },
+  { href: "/#dispatches", label: "Blog" },
 ];
 
 export default function Nav() {
