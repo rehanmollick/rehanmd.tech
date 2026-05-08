@@ -1,37 +1,32 @@
 # rehanmd.tech
 
-Personal portfolio. Dark, immersive, 3D-heavy.
+Personal portfolio of [Md Rehan Mollick](https://github.com/rehanmollick).
+Dark, immersive, R3F-heavy. Live at **https://rehanmd.tech**.
 
-Built with Next.js, React Three Fiber, Framer Motion, and Tailwind CSS.
-
-## Local Development
+## Quickstart
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open `http://localhost:3000` (or `:3001` if 3000 is taken).
 
-## Adding Projects
+## Where the content lives
 
-Edit `src/data/projects.ts` and drop images in `public/projects/{id}/`.
+Every project, dispatch (blog post), and the about bulletin lives in its own folder under **`public/`** — drop a markdown file + image files in the same place. No admin UI, no DB.
 
-## Adding Blog Posts
-
-Create a `.mdx` file in `src/content/blog/` with frontmatter:
-
-```mdx
----
-title: "Post Title"
-date: "2026-01-01"
-tags: ["tag1", "tag2"]
-excerpt: "Brief description."
----
-
-Your content here.
+```
+public/
+  projects/<id>/project.md         ← title, tech stack, slides
+  dispatches/<slug>/dispatch.mdx   ← frontmatter + MDX body
+  about/about.md                   ← bio, widgets, photos, facts
 ```
 
-## Deployment
+## Read this first
 
-Auto-deploys to Vercel on push to `main`.
+**[summary.md](./summary.md)** — full handover doc. Architecture, file tree, where to edit what, intentional placeholders, the prompt to give Claude Code when you want to add new content.
+
+## License
+
+Personal portfolio — code is MIT, but the design / copy / illustrations are mine.
