@@ -70,21 +70,26 @@ export default function MetroTrack({ projects }: Props) {
         return;
       }
 
-      // Smooth metro path. For each pair of points we draw either a vertical
-      // line (when columns match) or a horizontal-S cubic-bezier when columns
-      // differ. Control points sit at the vertical midpoint so the curve eases
-      // out of node A vertically and into node B vertically — gentler than the
-      // old 45° jog and avoids overlapping the station-sign plaques.
+      // Jagged metro path: vertical → 45° diagonal jog → vertical, like a
+      // real transit map. The diagonal segment is always exactly 45°
+      // (jogLen = |dx|). The top jog (upcoming terminus → first station)
+      // gets extra vertical headroom from the terminus's bottom padding so
+      // the angle reads less aggressive.
       let d = `M ${points[0].x} ${points[0].y}`;
       for (let i = 1; i < points.length; i++) {
         const a = points[i - 1];
         const b = points[i];
         const dx = b.x - a.x;
+        const dy = b.y - a.y;
         if (Math.abs(dx) < 2) {
           d += ` L ${b.x} ${b.y}`;
         } else {
-          const midY = (a.y + b.y) / 2;
-          d += ` C ${a.x} ${midY}, ${b.x} ${midY}, ${b.x} ${b.y}`;
+          const jogLen = Math.abs(dx);
+          const topY = a.y + (dy - jogLen) / 2;
+          const botY = topY + jogLen;
+          d += ` L ${a.x} ${topY}`;
+          d += ` L ${b.x} ${botY}`;
+          d += ` L ${b.x} ${b.y}`;
         }
       }
       setPath(d);
