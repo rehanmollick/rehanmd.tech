@@ -1,16 +1,10 @@
-"use client";
+// Server component — reads about content (frontmatter from public/about/about.md)
+// at build time and hands it to AboutClient which owns the modal state.
 
-// About section — wheatpaste poster centered against the train backdrop.
-// Click the poster to open the bulletin modal.
-
-import { useState } from "react";
 import { DEFAULT_ABOUT } from "@/lib/about";
-import EnvelopePoster from "./EnvelopePoster";
-import BulletinModal from "./BulletinModal";
+import AboutClient from "./AboutClient";
 
 export default function AboutSection() {
-  const [open, setOpen] = useState(false);
-
   return (
     <section
       id="about"
@@ -25,12 +19,7 @@ export default function AboutSection() {
           "radial-gradient(ellipse at center top, rgba(191,87,0,.05), transparent 60%), var(--page-outer)",
       }}
     >
-      <EnvelopePoster onOpen={() => setOpen(true)} />
-      <BulletinModal
-        open={open}
-        onClose={() => setOpen(false)}
-        data={DEFAULT_ABOUT}
-      />
+      <AboutClient data={DEFAULT_ABOUT} />
     </section>
   );
 }
