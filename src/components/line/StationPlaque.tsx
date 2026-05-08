@@ -5,7 +5,7 @@
 // + CSS lines 497–637 per .spec/13 §C.6.
 
 import { useState } from "react";
-import type { Project, ProjectSlide } from "@/data/projects";
+import type { Project, ProjectSlide } from "@/lib/projects";
 import GithubIcon from "@/components/icons/GithubIcon";
 import PlaqueMedia from "./PlaqueMedia";
 import Lightbox from "./Lightbox";

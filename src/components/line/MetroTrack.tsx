@@ -5,7 +5,7 @@
 // extracted verbatim from prototype/app.js:132–282 per .spec/13 §C.5 + §E.22.
 
 import { useEffect, useRef, useState } from "react";
-import type { Project } from "@/data/projects";
+import type { Project } from "@/lib/projects";
 import StationMarker from "./StationMarker";
 import StationPlaque from "./StationPlaque";
 import Terminus from "./Terminus";

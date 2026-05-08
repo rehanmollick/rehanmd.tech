@@ -6,7 +6,7 @@ import DispatchesSection from "@/components/dispatches/DispatchesSection";
 import LineSection from "@/components/line/LineSection";
 import Footer from "@/components/layout/Footer";
 import { getAllPosts } from "@/lib/mdx";
-import { projects } from "@/data/projects";
+import { getAllProjects } from "@/lib/projects";
 
 // Page composition follows .spec/03-train-scene-rules.md:
 // - <div className="train-stage"> is sticky at the top of the viewport.
@@ -18,6 +18,7 @@ import { projects } from "@/data/projects";
 
 export default function Home() {
   const posts = getAllPosts();
+  const projects = getAllProjects();
   return (
     <>
       <Nav />

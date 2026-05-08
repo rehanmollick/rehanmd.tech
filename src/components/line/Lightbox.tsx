@@ -4,7 +4,7 @@
 // ←/→/Esc/backdrop close per .spec/13 §C.6 + §E.4.
 
 import { useEffect } from "react";
-import type { ProjectSlide } from "@/data/projects";
+import type { ProjectSlide } from "@/lib/projects";
 
 interface Props {
   open: boolean;

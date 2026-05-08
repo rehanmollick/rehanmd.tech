@@ -6,7 +6,7 @@
 // Verbatim from prototype/app.js:287–376 per .spec/13 §C.6 + §E.21.
 
 import { useEffect, useRef, useState } from "react";
-import type { ProjectSlide } from "@/data/projects";
+import type { ProjectSlide } from "@/lib/projects";
 
 interface Props {
   slides: ProjectSlide[];

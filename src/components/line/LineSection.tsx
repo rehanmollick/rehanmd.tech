@@ -5,7 +5,7 @@
 // Layout extracted from prototype/index.html lines 1290–1346 + CSS lines 309–332
 // per .spec/13 §C.5.
 
-import type { Project } from "@/data/projects";
+import type { Project } from "@/lib/projects";
 import LineHeading from "./LineHeading";
 import LineLegend from "./LineLegend";
 import ArrivalsBoard from "./ArrivalsBoard";
