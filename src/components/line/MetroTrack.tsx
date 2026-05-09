@@ -10,12 +10,26 @@ import StationMarker from "./StationMarker";
 import StationPlaque from "./StationPlaque";
 import Terminus from "./Terminus";
 
-// Uniform layout — every station alternates sides cleanly with zero
-// horizontal shift. The line stays a straight vertical track; the visual
-// rhythm comes from the alternating L/R card placement, not from jogs that
-// can collide with station-sign plaques. Works for any project count.
+// Layout — alternates sides every station and applies a small per-pair
+// horizontal shift so the line zigzags subtly between groups of two
+// stations instead of running perfectly vertical. The whole row (card +
+// marker) translates together, so the buffer between card and line is
+// preserved and never collides with the station-sign plaques.
+//
+// Side: alternates R, L, R, L, ...
+// Shift pattern (per pair of stations): 0, -30, +30, -30, +30, ... px
+//   pair 0 (stations 0,1): no shift  ← line baseline
+//   pair 1 (stations 2,3): -30 px    ← line jogs left
+//   pair 2 (stations 4,5): +30 px    ← jogs right
+//   pair 3 (stations 6,7): -30 px    ← jogs left
+//   pair 4 (stations 8,9): +30 px    ← jogs right
+const SHIFT_PATTERN = [0, -30, 30, -30, 30];
+
 function layoutFor(index: number): { shift: number; side: "left" | "right" } {
-  return { shift: 0, side: index % 2 === 0 ? "right" : "left" };
+  const side: "left" | "right" = index % 2 === 0 ? "right" : "left";
+  const pair = Math.floor(index / 2);
+  const shift = SHIFT_PATTERN[pair % SHIFT_PATTERN.length];
+  return { shift, side };
 }
 
 interface Props {
