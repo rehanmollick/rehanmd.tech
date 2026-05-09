@@ -1,6 +1,7 @@
 import Nav from "@/components/layout/Nav";
 import HeroScene from "@/components/three/HeroScene";
 import ScrollCue from "@/components/hero/ScrollCue";
+import BottomGlow from "@/components/hero/BottomGlow";
 import AboutSection from "@/components/about/AboutSection";
 import DispatchesSection from "@/components/dispatches/DispatchesSection";
 import LineSection from "@/components/line/LineSection";
@@ -22,6 +23,7 @@ export default function Home() {
   return (
     <>
       <Nav />
+      <BottomGlow />
 
       <div
         className="train-stage relative"
