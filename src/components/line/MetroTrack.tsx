@@ -10,17 +10,13 @@ import StationMarker from "./StationMarker";
 import StationPlaque from "./StationPlaque";
 import Terminus from "./Terminus";
 
-// Per-station horizontal nudge (px) + which side the card sits on.
-// Order matches the data.js project array (newest first → oldest last).
-const STATION_LAYOUT: { shift: number; side: "left" | "right" }[] = [
-  { shift: 0, side: "right" }, // Karmen Playground
-  { shift: 0, side: "left" }, // GridPulse
-  { shift: -60, side: "right" }, // FlightSense
-  { shift: -60, side: "left" }, // SplitPay
-  { shift: 40, side: "right" }, // Orbit
-  { shift: 40, side: "left" }, // Aegis
-  { shift: -30, side: "right" }, // Mp3
-];
+// Uniform layout — every station alternates sides cleanly with zero
+// horizontal shift. The line stays a straight vertical track; the visual
+// rhythm comes from the alternating L/R card placement, not from jogs that
+// can collide with station-sign plaques. Works for any project count.
+function layoutFor(index: number): { shift: number; side: "left" | "right" } {
+  return { shift: 0, side: index % 2 === 0 ? "right" : "left" };
+}
 
 interface Props {
   projects: Project[];
@@ -235,10 +231,7 @@ export default function MetroTrack({ projects }: Props) {
       {/* Stations container */}
       <div id="stations">
         {projects.map((project, i) => {
-          const layout = STATION_LAYOUT[i] ?? {
-            shift: 0,
-            side: i % 2 === 0 ? "right" : "left",
-          };
+          const layout = layoutFor(i);
           return (
             <div
               key={project.id}
