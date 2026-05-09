@@ -211,20 +211,13 @@ Claude will write the MDX file with frontmatter and an opinionated body matching
 │   │   │   ├── TunnelEnvironment.tsx  (tunnel outside windows)
 │   │   │   ├── TunnelLights.tsx       (scrolling tunnel lights)
 │   │   │   ├── PostProcessingEffects.tsx (bloom, vignette, grain)
-│   │   │   ├── CameraEffects.tsx      (subtle camera shake)
 │   │   │   ├── LEDTicker.tsx          (in-scene 3D ticker)
 │   │   │   ├── DustParticles.tsx
 │   │   │   ├── SceneLoader.tsx
 │   │   │   ├── PosterFrame.tsx        (in-scene CLICK HERE poster — 3D)
-│   │   │   ├── PosterLinksOverlay.tsx (HTML overlay shown when poster clicked)
-│   │   │   ├── WallPoster.tsx
-│   │   │   ├── WallTiles.tsx
-│   │   │   ├── WallLighting.tsx
-│   │   │   └── MetroWallScene.tsx
+│   │   │   └── PosterLinksOverlay.tsx (HTML overlay shown when poster clicked)
 │   │   │
-│   │   ├── hero/                      (HTML overlays on top of train scene)
-│   │   │   ├── HeroPanel.tsx          (UNUSED — kept for reference)
-│   │   │   ├── Marquee.tsx            (UNUSED — kept for reference)
+│   │   ├── hero/
 │   │   │   └── ScrollCue.tsx          (SCROLL hint at bottom)
 │   │   │
 │   │   ├── about/                     (about section — wheatpaste poster + bulletin modal)
@@ -273,14 +266,12 @@ Claude will write the MDX file with frontmatter and an opinionated body matching
 │   └── styles/
 │       └── globals.css                (CSS custom properties + keyframes)
 │
-├── .spec/                             (design contract — kept for context)
 ├── tailwind.config.ts
 ├── next.config.mjs
 ├── tsconfig.json
 ├── package.json
 ├── README.md                          (points at this file)
-├── CLAUDE.md                          (project guidance for Claude Code)
-└── summary.md                         (you're reading it)
+└── summary.md                         (you're reading it — Claude reads this every session)
 ```
 
 ### Files explicitly **DROPPED** during the cleanup
@@ -335,6 +326,24 @@ Fonts are loaded via `next/font/google` in `src/app/layout.tsx`. Reference via `
 
 ---
 
+## 7b. Hard rules for Claude Code (read every session)
+
+1. **Author every commit as `rehanmollick <rehanmollick07@gmail.com>`.** Don't
+   change git config. Verify with `git config user.name && git config user.email`.
+2. **Never** include "Claude", "Anthropic", or any AI attribution in commit
+   messages, PR descriptions, or `Co-Authored-By` trailers.
+3. **Conventional commits**: `feat:`, `fix:`, `chore:`, `refactor:`, `docs:`.
+   Granular — one logical change per commit.
+4. **Push after every commit** so the contributions graph reflects the work in
+   real time. Rehan explicitly wants high commit volume on his account.
+5. **Don't propose re-adding admin / NextAuth / Vercel KV / Vercel Blob / LLM
+   endpoints.** All of that was removed. Content is git-managed.
+6. **Don't regress aesthetics** — see §8 below for the full guardrail list.
+7. **Don't modify the R3F train components** unless explicitly asked. Rehan
+   worked hardest on those (`src/components/three/*`).
+8. **Open + merge a PR for each logical chunk** with `gh pr merge <n> --merge
+   --admin --delete-branch` — keeps the activity feed showing PR opens/merges.
+
 ## 8. Aesthetic guardrails
 
 These are the rules I (Rehan) care about. **Do not regress them when editing.**
@@ -379,8 +388,6 @@ Local dev: `npm run dev` → `http://localhost:3000` (or `:3001` if `:3000` is o
 
 ## 11. Important things NOT to delete
 
-- `.spec/` — design contract; the prototype HTML/CSS/JS is the source of truth for visual decisions.
-- `CLAUDE.md` — Claude Code's per-project guidance.
 - All R3F train components (`src/components/three/*`) — the hero would break.
 - `public/data/world-land-paths.html` — the bulletin world map fetches this at runtime to render land outlines.
 - `public/textures/*` — `paper-noise.png` (bulletin), `cork-tile.jpg` (in case you ever want a literal cork-board variant).
