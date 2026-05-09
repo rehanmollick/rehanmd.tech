@@ -1,6 +1,7 @@
-// Subtle persistent burnt-orange glow at the bottom of the viewport.
-// Mounted only on the home route (/). Below the modal layer (z-index 200)
-// so the bulletin / lightbox overlays cover it cleanly when open.
+// Persistent burnt-orange glow at the bottom of the viewport — same accent
+// color as the metro line. Always visible on the home page regardless of
+// scroll position. Sits above <main> (z-index 10) but below modals
+// (z-index 200) so the bulletin / lightbox can still cover it cleanly.
 
 export default function BottomGlow() {
   return (
@@ -13,9 +14,9 @@ export default function BottomGlow() {
         bottom: 0,
         height: "32vh",
         pointerEvents: "none",
-        zIndex: 5,
+        zIndex: 50,
         background:
-          "radial-gradient(ellipse 90% 100% at 50% 100%, rgba(191,87,0,.18), rgba(191,87,0,.06) 45%, transparent 75%)",
+          "radial-gradient(ellipse 80% 100% at 50% 100%, rgba(191,87,0,.32), rgba(191,87,0,.12) 45%, transparent 78%)",
       }}
     />
   );

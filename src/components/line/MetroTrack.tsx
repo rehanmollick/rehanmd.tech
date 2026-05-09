@@ -240,7 +240,9 @@ export default function MetroTrack({ projects }: Props) {
               style={{
                 position: "relative",
                 display: "grid",
-                gridTemplateColumns: "1fr 90px 1fr",
+                // Wider center column gives the line + bulb-string + station
+                // sign room to breathe without ever overlapping the card edge.
+                gridTemplateColumns: "1fr 200px 1fr",
                 gap: 0,
                 padding: "40px 0",
                 minHeight: 320,
@@ -309,10 +311,10 @@ function CardSlot({
       style={{
         gridColumn: side === "left" ? 1 : 3,
         justifySelf: side === "left" ? "end" : "start",
-        paddingRight: side === "left" ? 30 : 0,
-        paddingLeft: side === "right" ? 30 : 0,
+        paddingRight: side === "left" ? 24 : 0,
+        paddingLeft: side === "right" ? 24 : 0,
         width: "100%",
-        maxWidth: 560,
+        maxWidth: 500,
         position: "relative",
         zIndex: 3,
         transform: `translateX(${-shift}px)`,
