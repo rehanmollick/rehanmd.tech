@@ -10,26 +10,30 @@ import StationMarker from "./StationMarker";
 import StationPlaque from "./StationPlaque";
 import Terminus from "./Terminus";
 
-// Layout — alternates sides every station and applies a per-pair horizontal
-// shift so the line zigzags between groups of two stations. The whole row
-// (card + marker) translates together, so the buffer between card and line
-// is preserved and never collides with the station-sign plaques.
+// Layout — every station has its own horizontal shift, alternating sides.
+// The whole row (card + marker) translates together, so the line is
+// VERTICAL at every station (the card aligns with the flat segment of the
+// line that passes through its node) and the variation happens BETWEEN
+// stations as the line jogs from one station's x to the next.
 //
-// Side: alternates R, L, R, L, ...
-// Shift magnitudes vary across pairs so the zigzag isn't monotonous.
-//   pair 0: 0     ← baseline
-//   pair 1: -25   ← small jog left
-//   pair 2: +55   ← bigger jog right
-//   pair 3: -40   ← medium jog left
-//   pair 4: +20   ← small jog right
-// The differentials between consecutive pairs (what actually drives the
-// visible jog amplitude) are 25, 80, 95, 60 px — mixed, organic.
-const SHIFT_PATTERN = [0, -25, 55, -40, 20];
+// Each transition has a different jog amount, so no two stretches of the
+// line look the same — small jogs and dramatic jogs mixed together.
+//   station 0:   0   ← baseline
+//   station 1: -20
+//   station 2: +30
+//   station 3: -45
+//   station 4: +25
+//   station 5: -10
+//   station 6: +50
+//   station 7: -30
+//   station 8: +15
+//   station 9:  -5
+// Resulting jog deltas between stations: 20, 50, 75, 70, 35, 60, 80, 45, 20 px.
+const STATION_SHIFTS = [0, -20, 30, -45, 25, -10, 50, -30, 15, -5];
 
 function layoutFor(index: number): { shift: number; side: "left" | "right" } {
   const side: "left" | "right" = index % 2 === 0 ? "right" : "left";
-  const pair = Math.floor(index / 2);
-  const shift = SHIFT_PATTERN[pair % SHIFT_PATTERN.length];
+  const shift = STATION_SHIFTS[index % STATION_SHIFTS.length];
   return { shift, side };
 }
 
