@@ -10,20 +10,21 @@ import StationMarker from "./StationMarker";
 import StationPlaque from "./StationPlaque";
 import Terminus from "./Terminus";
 
-// Layout — alternates sides every station and applies a small per-pair
-// horizontal shift so the line zigzags subtly between groups of two
-// stations instead of running perfectly vertical. The whole row (card +
-// marker) translates together, so the buffer between card and line is
-// preserved and never collides with the station-sign plaques.
+// Layout — alternates sides every station and applies a per-pair horizontal
+// shift so the line zigzags between groups of two stations. The whole row
+// (card + marker) translates together, so the buffer between card and line
+// is preserved and never collides with the station-sign plaques.
 //
 // Side: alternates R, L, R, L, ...
-// Shift pattern (per pair of stations): 0, -30, +30, -30, +30, ... px
-//   pair 0 (stations 0,1): no shift  ← line baseline
-//   pair 1 (stations 2,3): -30 px    ← line jogs left
-//   pair 2 (stations 4,5): +30 px    ← jogs right
-//   pair 3 (stations 6,7): -30 px    ← jogs left
-//   pair 4 (stations 8,9): +30 px    ← jogs right
-const SHIFT_PATTERN = [0, -30, 30, -30, 30];
+// Shift magnitudes vary across pairs so the zigzag isn't monotonous.
+//   pair 0: 0     ← baseline
+//   pair 1: -25   ← small jog left
+//   pair 2: +55   ← bigger jog right
+//   pair 3: -40   ← medium jog left
+//   pair 4: +20   ← small jog right
+// The differentials between consecutive pairs (what actually drives the
+// visible jog amplitude) are 25, 80, 95, 60 px — mixed, organic.
+const SHIFT_PATTERN = [0, -25, 55, -40, 20];
 
 function layoutFor(index: number): { shift: number; side: "left" | "right" } {
   const side: "left" | "right" = index % 2 === 0 ? "right" : "left";
