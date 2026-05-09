@@ -317,13 +317,16 @@ export default function MetroTrack({ projects }: Props) {
 
 function CardSlot({
   side,
-  shift,
   children,
 }: {
   side: "left" | "right";
-  shift: number;
+  shift: number; // kept in API for callsite uniformity, intentionally unused
   children: React.ReactNode;
 }) {
+  // No counter-translate — the card rides the row's shift along with the
+  // marker. Result: at every station the card sits glued to the (flat)
+  // vertical segment of the line that passes through the node, and the
+  // line's variation/jog happens entirely between stations.
   return (
     <div
       className="card-slot"
@@ -336,7 +339,6 @@ function CardSlot({
         maxWidth: 500,
         position: "relative",
         zIndex: 3,
-        transform: `translateX(${-shift}px)`,
       }}
     >
       {children}
