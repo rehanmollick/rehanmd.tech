@@ -12,11 +12,11 @@ export default function BottomGlow() {
         left: 0,
         right: 0,
         bottom: 0,
-        height: "32vh",
+        height: "26vh",
         pointerEvents: "none",
         zIndex: 50,
         background:
-          "radial-gradient(ellipse 80% 100% at 50% 100%, rgba(191,87,0,.32), rgba(191,87,0,.12) 45%, transparent 78%)",
+          "radial-gradient(ellipse 70% 100% at 50% 100%, rgba(191,87,0,.14), rgba(191,87,0,.05) 50%, transparent 80%)",
       }}
     />
   );
