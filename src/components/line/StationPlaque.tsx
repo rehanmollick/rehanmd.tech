@@ -233,7 +233,7 @@ export default function StationPlaque({
                 textTransform: "uppercase",
               }}
             >
-              ▸ BUILT WITH
+              BUILT WITH
             </div>
             <div
               className="plaque-tech-chips"
