@@ -279,24 +279,47 @@ export default function StationPlaque({
             </div>
           </div>
 
-          {/* Stack toggle */}
+          {/* Stack toggle — styled as a clickable affordance with a
+              dashed accent border so visitors notice it's expandable. */}
           <button
             type="button"
             className={`stack-toggle font-mono${stackOpen ? " open" : ""}`}
             onClick={() => setStackOpen((v) => !v)}
             style={{
-              marginTop: 12,
+              marginTop: 16,
+              padding: "10px 14px",
               fontSize: 11,
-              color: stackOpen ? "var(--accent-light)" : "var(--text-muted)",
+              fontWeight: 700,
+              color: stackOpen ? "var(--accent-light)" : "var(--accent)",
               display: "inline-flex",
               alignItems: "center",
-              gap: 6,
-              letterSpacing: "0.1em",
+              justifyContent: "space-between",
+              gap: 12,
+              letterSpacing: "0.2em",
               textTransform: "uppercase",
               whiteSpace: "nowrap",
-              background: "transparent",
-              border: 0,
+              background: stackOpen
+                ? "rgba(191,87,0,.14)"
+                : "rgba(191,87,0,.06)",
+              border: "1px dashed var(--accent-dim)",
+              borderLeft: `3px solid ${stackOpen ? "var(--accent-light)" : "var(--accent)"}`,
               cursor: "pointer",
+              transition: "all .2s",
+              textShadow: "0 0 6px rgba(255,140,50,.25)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--accent)";
+              e.currentTarget.style.background = "rgba(191,87,0,.18)";
+              e.currentTarget.style.color = "var(--accent-light)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--accent-dim)";
+              e.currentTarget.style.background = stackOpen
+                ? "rgba(191,87,0,.14)"
+                : "rgba(191,87,0,.06)";
+              e.currentTarget.style.color = stackOpen
+                ? "var(--accent-light)"
+                : "var(--accent)";
             }}
           >
             <span
@@ -306,11 +329,24 @@ export default function StationPlaque({
                 display: "inline-block",
                 transition: "transform .2s",
                 transform: stackOpen ? "rotate(90deg)" : undefined,
+                fontSize: 14,
               }}
             >
               ▸
             </span>
-            WHY THIS STACK
+            <span style={{ flex: 1 }}>
+              {stackOpen ? "HIDE THE STACK" : "WHY THIS STACK"}
+            </span>
+            <span
+              aria-hidden
+              style={{
+                fontSize: 10,
+                opacity: 0.7,
+                letterSpacing: "0.1em",
+              }}
+            >
+              {stackOpen ? "—" : "TAP"}
+            </span>
           </button>
 
           {stackOpen && (
