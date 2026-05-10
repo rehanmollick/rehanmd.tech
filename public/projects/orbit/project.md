@@ -1,49 +1,57 @@
 ---
 title: Orbit
-date: 2025-11-12
-dateDisplay: November 2025
+date: 2025-10-22
+dateDisplay: October 2025
 stationName: Orbit Central
 context: Texas Convergent Demo Day 2025 — Best Design Award
 liveUrl: null
-repoUrl: https://github.com/rehanmollick/IOT-ORBIT
+repoUrl: https://github.com/mek-github/iot-bt-orbit
 description: >-
   Bluetooth-powered event networking app for UT students and recruiters at
-  career fairs. Used at 12+ UT events. 9 fully-functional iOS screens
-  implementing the Figma design pixel-perfectly, anchored by a signature
-  animated "orb" visualization that represents networking connections forming
-  in real time.
+  career fairs. Reimagines how people meet at networking events through
+  proximity-based discovery, a signature animated orbit visualization, and
+  real-time Firebase-backed event management. Built for Texas Convergent
+  Demo Day 2025.
 tags:
   - mobile
-  - ble
-  - iot
+  - ios
   - networking
+  - firebase
+  - team-build
   - award-winner
 techStack:
   - name: React Native + Expo
     reason: >-
-      Cross-platform mobile from one codebase. iOS-first launch but Android
-      stays in reach for the full UT student body regardless of device.
-  - name: React Native Skia
-    reason: >-
-      Powers the signature animated orb (pulse, shimmer, flowing-connection
-      effects). Skia is the right tool when CSS-style animations can't hit
-      the precision required for a real-time networking visualization.
-  - name: Bluetooth Low Energy
-    reason: >-
-      Proximity detection without internet. Works in crowded venues like
-      career fairs where WiFi is congested or unreliable.
-  - name: Firebase Firestore
-    reason: >-
-      Real-time DB for instant profile exchanges when BLE proximity is
-      detected. Firestore listeners make the "nearby people" list feel
-      instant.
+      Expo 54 + React Native 0.76 — cross-platform mobile from a single
+      codebase. iOS-first launch but Android stays in reach. Expo's managed
+      workflow let the team move fast through demo day prep.
   - name: TypeScript
     reason: >-
-      Type safety for the complex BLE event handling and connection state
-      machine across the 9-screen flow.
+      Type safety for the connection state machine, the proximity-detection
+      pipeline, and the Firestore document shapes. Catches refactors when
+      multiple people are touching the same screens.
+  - name: Firebase (Firestore + Auth + Storage)
+    reason: >-
+      Real-time Firestore for live event updates and check-ins; Firebase Auth
+      for student/recruiter accounts; Storage for profile photos. One service
+      handles the entire backend so the team could focus on the UX.
+  - name: React Navigation
+    reason: >-
+      Navigation across the splash, browse, profile, event detail, and
+      post-event recap screens. Stack + bottom tabs blended cleanly.
+  - name: React Native Animated API
+    reason: >-
+      Powers the signature orbit visualization (pulse, shimmer, flowing
+      connections). Animated runs on the native driver so the visualization
+      doesn't drop frames during scroll or screen transitions.
+  - name: Bluetooth-inspired proximity model
+    reason: >-
+      A simulated proximity layer modeled on BLE behavior — works reliably
+      in crowded venues where actual radio scanning would be flaky and
+      battery-hungry. Demo-day-grade reliability without permission prompts.
 slides:
   - { label: "orbit — splash + onboarding" }
-  - { label: "nearby users — animated orb" }
-  - { label: "profile exchange" }
-  - { label: "event card" }
+  - { label: "browse events" }
+  - { label: "orbit visualization — connections forming" }
+  - { label: "post-event recap" }
 ---
