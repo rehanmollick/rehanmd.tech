@@ -40,7 +40,9 @@ function metaFromFrontmatter(slug: string, data: Record<string, unknown>): BlogP
   };
 }
 
-/** All dispatch metadata, sorted newest-first. */
+/** All dispatch metadata, sorted oldest-first so the literal "First Post"
+ * (and any earlier writing) pins to the top of the wall, with newer
+ * dispatches appended after. */
 export function getAllPosts(): BlogPostMeta[] {
   if (!fs.existsSync(DISPATCHES_DIR)) return [];
   const slugs = fs
@@ -59,7 +61,7 @@ export function getAllPosts(): BlogPostMeta[] {
     .filter((p): p is BlogPostMeta => p !== null);
 
   return posts.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
   );
 }
 
