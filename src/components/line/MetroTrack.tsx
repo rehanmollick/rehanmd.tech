@@ -18,18 +18,19 @@ import Terminus from "./Terminus";
 //
 // Each transition has a different jog amount, so no two stretches of the
 // line look the same — small jogs and dramatic jogs mixed together.
+// Capped at ±35 px so cards never clip the viewport edge at 1280 width.
 //   station 0:   0   ← baseline
-//   station 1: -20
-//   station 2: +30
-//   station 3: -45
-//   station 4: +25
-//   station 5: -10
-//   station 6: +50
-//   station 7: -30
-//   station 8: +15
-//   station 9:  -5
-// Resulting jog deltas between stations: 20, 50, 75, 70, 35, 60, 80, 45, 20 px.
-const STATION_SHIFTS = [0, -20, 30, -45, 25, -10, 50, -30, 15, -5];
+//   station 1: -15
+//   station 2: +25
+//   station 3: -32
+//   station 4: +18
+//   station 5:  -8
+//   station 6: +30
+//   station 7: -22
+//   station 8: +12
+//   station 9:  -4
+// Jog deltas between stations: 15, 40, 57, 50, 26, 38, 52, 34, 16 px.
+const STATION_SHIFTS = [0, -15, 25, -32, 18, -8, 30, -22, 12, -4];
 
 function layoutFor(index: number): { shift: number; side: "left" | "right" } {
   const side: "left" | "right" = index % 2 === 0 ? "right" : "left";
@@ -336,7 +337,10 @@ function CardSlot({
         paddingRight: side === "left" ? 24 : 0,
         paddingLeft: side === "right" ? 24 : 0,
         width: "100%",
-        maxWidth: 500,
+        // 460 + 24 padding fits inside a (1240 − 200)/2 = 520 px column
+        // with ~36 px headroom — enough that a ±35 shift can't clip the
+        // viewport edge.
+        maxWidth: 460,
         position: "relative",
         zIndex: 3,
       }}
