@@ -287,18 +287,30 @@ export default function StationPlaque({
             style={{
               marginTop: 14,
               padding: 0,
-              fontSize: 11,
+              fontSize: 13,
               fontWeight: 700,
-              color: "var(--text-primary)",
+              color: "#fff",
               display: "inline-flex",
               alignItems: "center",
-              gap: 8,
-              letterSpacing: "0.2em",
+              gap: 10,
+              letterSpacing: "0.25em",
               textTransform: "uppercase",
               whiteSpace: "nowrap",
               background: "transparent",
               border: 0,
               cursor: "pointer",
+              textShadow: "0 0 10px rgba(255,255,255,.25)",
+              borderBottom: "1px solid rgba(255,255,255,.4)",
+              paddingBottom: 2,
+              transition: "all .2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderBottomColor = "#fff";
+              e.currentTarget.style.textShadow = "0 0 14px rgba(255,255,255,.45)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderBottomColor = "rgba(255,255,255,.4)";
+              e.currentTarget.style.textShadow = "0 0 10px rgba(255,255,255,.25)";
             }}
           >
             <span
@@ -308,7 +320,7 @@ export default function StationPlaque({
                 display: "inline-block",
                 transition: "transform .2s",
                 transform: stackOpen ? "rotate(90deg)" : undefined,
-                fontSize: 13,
+                fontSize: 16,
               }}
             >
               ▸
