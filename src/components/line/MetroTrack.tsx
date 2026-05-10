@@ -16,21 +16,17 @@ import Terminus from "./Terminus";
 // line that passes through its node) and the variation happens BETWEEN
 // stations as the line jogs from one station's x to the next.
 //
-// Each transition has a different jog amount, so no two stretches of the
-// line look the same — small jogs and dramatic jogs mixed together.
-// Capped at ±35 px so cards never clip the viewport edge at 1280 width.
-//   station 0:   0   ← baseline
-//   station 1: -15
-//   station 2: +25
-//   station 3: -32
-//   station 4: +18
-//   station 5:  -8
-//   station 6: +30
-//   station 7: -22
-//   station 8: +12
-//   station 9:  -4
-// Jog deltas between stations: 15, 40, 57, 50, 26, 38, 52, 34, 16 px.
-const STATION_SHIFTS = [0, -15, 25, -32, 18, -8, 30, -22, 12, -4];
+// Most stations sit on the baseline (shift 0). Occasional pairs jog left
+// or right by a substantial amount, then the line returns to baseline.
+// Each "section" of jogged stations is the line itself moving, with cards
+// glued to the line on alternating sides. Big jogs randomly placed.
+//   stations 0,1:    0       baseline
+//   stations 2,3:  -55       medium-big jog left
+//   station  4:      0       back to baseline (single)
+//   station  5:    +75       BIG single-station jog right
+//   stations 6,7:    0       baseline
+//   stations 8,9:  -30       smaller jog left near the bottom
+const STATION_SHIFTS = [0, 0, -55, -55, 0, 75, 0, 0, -30, -30];
 
 function layoutFor(index: number): { shift: number; side: "left" | "right" } {
   const side: "left" | "right" = index % 2 === 0 ? "right" : "left";
@@ -260,9 +256,9 @@ export default function MetroTrack({ projects }: Props) {
               style={{
                 position: "relative",
                 display: "grid",
-                // Wider center column gives the line + bulb-string + station
-                // sign room to breathe without ever overlapping the card edge.
-                gridTemplateColumns: "1fr 200px 1fr",
+                // Narrow marker column — the line is the spine; cards
+                // stick to it on alternating sides with just a small gap.
+                gridTemplateColumns: "1fr 60px 1fr",
                 gap: 0,
                 padding: "40px 0",
                 minHeight: 320,
@@ -334,13 +330,13 @@ function CardSlot({
       style={{
         gridColumn: side === "left" ? 1 : 3,
         justifySelf: side === "left" ? "end" : "start",
-        paddingRight: side === "left" ? 24 : 0,
-        paddingLeft: side === "right" ? 24 : 0,
+        // Tiny padding from the column edge → card sits right next to the
+        // line with ~42 px total gap (12 padding + 30 to marker center).
+        paddingRight: side === "left" ? 12 : 0,
+        paddingLeft: side === "right" ? 12 : 0,
         width: "100%",
-        // 460 + 24 padding fits inside a (1240 − 200)/2 = 520 px column
-        // with ~36 px headroom — enough that a ±35 shift can't clip the
-        // viewport edge.
-        maxWidth: 460,
+        // Sized so even a ±75 px shift can't clip the 1280 viewport.
+        maxWidth: 480,
         position: "relative",
         zIndex: 3,
       }}
