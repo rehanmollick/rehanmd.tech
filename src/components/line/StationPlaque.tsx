@@ -289,7 +289,7 @@ export default function StationPlaque({
               padding: 0,
               fontSize: 11,
               fontWeight: 700,
-              color: "var(--accent-light)",
+              color: "var(--text-primary)",
               display: "inline-flex",
               alignItems: "center",
               gap: 8,
@@ -299,7 +299,6 @@ export default function StationPlaque({
               background: "transparent",
               border: 0,
               cursor: "pointer",
-              textShadow: "0 0 6px rgba(255,140,50,.3)",
             }}
           >
             <span
