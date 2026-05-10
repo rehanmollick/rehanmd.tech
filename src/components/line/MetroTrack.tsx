@@ -82,11 +82,26 @@ export default function MetroTrack({ projects }: Props) {
         return;
       }
 
-      // Jagged metro path: vertical → 45° diagonal jog → vertical, like a
-      // real transit map. The diagonal segment is always exactly 45°
-      // (jogLen = |dx|). The top jog (upcoming terminus → first station)
-      // gets extra vertical headroom from the terminus's bottom padding so
-      // the angle reads less aggressive.
+      // Collect each station's card vertical extent so the line's diagonal
+      // can be pinned to the empty space BETWEEN cards instead of crossing
+      // through them. cardYs[k] corresponds to the kth station node, which
+      // is points[k+1] (since points[0] is the upcoming terminus icon).
+      const cardYs: { top: number; bottom: number }[] = [];
+      body.querySelectorAll(".station").forEach((s) => {
+        const card = s.querySelector(".plaque");
+        if (card) {
+          const r = card.getBoundingClientRect();
+          cardYs.push({
+            top: r.top - bodyRect.top,
+            bottom: r.bottom - bodyRect.top,
+          });
+        }
+      });
+
+      // Jagged metro path: vertical → 45° diagonal jog → vertical. The
+      // diagonal is dynamically pinned between the previous card's bottom
+      // and the next card's top so it never crosses card content.
+      const MARGIN = 8;
       let d = `M ${points[0].x} ${points[0].y}`;
       for (let i = 1; i < points.length; i++) {
         const a = points[i - 1];
@@ -95,14 +110,64 @@ export default function MetroTrack({ projects }: Props) {
         const dy = b.y - a.y;
         if (Math.abs(dx) < 2) {
           d += ` L ${b.x} ${b.y}`;
-        } else {
-          const jogLen = Math.abs(dx);
-          const topY = a.y + (dy - jogLen) / 2;
-          const botY = topY + jogLen;
-          d += ` L ${a.x} ${topY}`;
-          d += ` L ${b.x} ${botY}`;
-          d += ` L ${b.x} ${b.y}`;
+          continue;
         }
+        const jogLen = Math.abs(dx);
+
+        // Look up the cards anchoring this segment. Segment from points[i-1]
+        // (station index i-2) to points[i] (station index i-1) — only valid
+        // when both endpoints are stations (not terminus boundaries).
+        const aIdx = i - 2;
+        const bIdx = i - 1;
+        const aCard = aIdx >= 0 && aIdx < cardYs.length ? cardYs[aIdx] : null;
+        const bCard = bIdx >= 0 && bIdx < cardYs.length ? cardYs[bIdx] : null;
+
+        let topY: number;
+        let botY: number;
+
+        if (aCard && bCard) {
+          // Pin diagonal between the two cards.
+          const availTop = aCard.bottom + MARGIN;
+          const availBot = bCard.top - MARGIN;
+          const avail = availBot - availTop;
+          if (avail >= jogLen) {
+            const slack = avail - jogLen;
+            topY = availTop + slack / 2;
+            botY = topY + jogLen;
+          } else if (avail > 4) {
+            // Steeper-than-45° to fit the card-free space without overlap.
+            topY = availTop;
+            botY = availBot;
+          } else {
+            topY = a.y + (dy - jogLen) / 2;
+            botY = topY + jogLen;
+          }
+        } else if (aCard) {
+          // Heading from a station into a terminus. Keep the diagonal below
+          // the previous card's bottom edge.
+          topY = Math.max(aCard.bottom + MARGIN, a.y + (dy - jogLen) / 2);
+          botY = topY + jogLen;
+          if (botY > b.y - MARGIN) {
+            botY = b.y - MARGIN;
+            topY = botY - jogLen;
+          }
+        } else if (bCard) {
+          // Coming from a terminus into a station. Keep the diagonal above
+          // the next card's top edge.
+          botY = Math.min(bCard.top - MARGIN, a.y + (dy - jogLen) / 2 + jogLen);
+          topY = botY - jogLen;
+          if (topY < a.y + MARGIN) {
+            topY = a.y + MARGIN;
+            botY = topY + jogLen;
+          }
+        } else {
+          topY = a.y + (dy - jogLen) / 2;
+          botY = topY + jogLen;
+        }
+
+        d += ` L ${a.x} ${topY}`;
+        d += ` L ${b.x} ${botY}`;
+        d += ` L ${b.x} ${b.y}`;
       }
       setPath(d);
 
